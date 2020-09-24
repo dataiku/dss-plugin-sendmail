@@ -1,5 +1,5 @@
 import dataiku
-from dataiku.customrecipe import *
+from dataiku.customrecipe import get_output_names_for_role, get_input_names_for_role, get_recipe_config
 import pandas as pd
 import logging
 # Import smtplib for the actual sending function
@@ -8,7 +8,6 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
-import StringIO
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
@@ -43,14 +42,14 @@ smtp_port = int(config.get('smtp_port', "25"))
 attachment_type = config.get('attachment_type', "csv")
 
 output_schema = list(people.read_schema())
-output_schema.append({'name':'sendmail_status', 'type':'string'})
-output_schema.append({'name':'sendmail_error', 'type':'string'})
+output_schema.append({'name': 'sendmail_status', 'type': 'string'})
+output_schema.append({'name': 'sendmail_error', 'type': 'string'})
 output.write_schema(output_schema)
 
 if not body_column and not body_value:
     raise AttributeError("No body column nor body value specified")
 
-people_columns = [ p['name'] for p in people.read_schema() ]
+people_columns = [p['name'] for p in people.read_schema()]
 for arg in ['sender', 'subject', 'body']:
     if not globals()["use_" + arg + "_value"] and globals()[arg + "_column"] not in people_columns:
         raise AttributeError("The column you specified for %s (%s) was not found." % (arg, globals()[arg + "_column"]))
@@ -72,11 +71,11 @@ for a in attachments:
 
     if attachment_type == "excel":
         app = MIMEApplication(buf, _subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        app.add_header("Content-Disposition", 'attachment', filename= a.full_name + ".xlsx")
+        app.add_header("Content-Disposition", 'attachment', filename=a.full_name + ".xlsx")
         mime_parts.append(app)
     else:
         txt = MIMEText(buf, _subtype="csv", _charset="utf-8")
-        txt.add_header("Content-Disposition", 'attachment', filename= a.full_name + ".csv")
+        txt.add_header("Content-Disposition", 'attachment', filename=a.full_name + ".csv")
         mime_parts.append(txt)
 
 
@@ -88,12 +87,12 @@ def send_email(contact):
     email_text = body_value if use_body_value else contact.get(body_column, "")
     email_subject = subject_value if use_subject_value else contact.get(subject_column, "")
     sender = sender_value if use_sender_value else contact.get(sender_column, "")
-    
+
     msg = MIMEMultipart()
 
     msg["From"] = sender
     msg["To"] = recipient
-    msg["Subject"]=  email_subject
+    msg["Subject"] = email_subject
 
     # Leave some space for proper displaying of the attachment
     msg.attach(MIMEText(email_text + '\n\n', 'plain', body_encoding))
@@ -101,11 +100,11 @@ def send_email(contact):
         msg.attach(a)
 
     s.sendmail(sender, [recipient], msg.as_string())
-    
+
 
 with output.get_writer() as writer:
     i = 0
-    success=0
+    success = 0
     fail = 0
     for contact in people.iter_rows():
         logging.info("Sending to %s" % contact)
@@ -113,19 +112,19 @@ with output.get_writer() as writer:
             send_email(contact)
             d = dict(contact)
             d['sendmail_status'] = 'SUCCESS'
-            success+=1
+            success += 1
             if writer:
                 writer.write_row_dict(d)
         except Exception as e:
             logging.exception("Send failed")
-            fail+=1
+            fail += 1
             d = dict(contact)
             d['sendmail_status'] = 'FAILED'
             d['sendmail_error'] = str(e)
             if writer:
                 writer.write_row_dict(d)
 
-        i +=1
+        i += 1
         if i % 5 == 0:
             logging.info("Sent %d mails (%d success %d fail)" % (i, success, fail))
 
