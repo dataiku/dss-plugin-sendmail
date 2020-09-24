@@ -106,26 +106,28 @@ with output.get_writer() as writer:
     i = 0
     success = 0
     fail = 0
-    for contact in people.iter_rows():
-        logging.info("Sending to %s" % contact)
-        try:
-            send_email(contact)
-            d = dict(contact)
-            d['sendmail_status'] = 'SUCCESS'
-            success += 1
-            if writer:
-                writer.write_row_dict(d)
-        except Exception as e:
-            logging.exception("Send failed")
-            fail += 1
-            d = dict(contact)
-            d['sendmail_status'] = 'FAILED'
-            d['sendmail_error'] = str(e)
-            if writer:
-                writer.write_row_dict(d)
-
-        i += 1
-        if i % 5 == 0:
-            logging.info("Sent %d mails (%d success %d fail)" % (i, success, fail))
-
+    try:
+        for contact in people.iter_rows():
+            logging.info("Sending to %s" % contact)
+            try:
+                send_email(contact)
+                d = dict(contact)
+                d['sendmail_status'] = 'SUCCESS'
+                success += 1
+                if writer:
+                    writer.write_row_dict(d)
+            except Exception as e:
+                logging.exception("Send failed")
+                fail += 1
+                d = dict(contact)
+                d['sendmail_status'] = 'FAILED'
+                d['sendmail_error'] = str(e)
+                if writer:
+                    writer.write_row_dict(d)
+            i += 1
+            if i % 5 == 0:
+                logging.info("Sent %d mails (%d success %d fail)" % (i, success, fail))
+    except RuntimeError as runtime_error:
+        # https://stackoverflow.com/questions/51700960/runtimeerror-generator-raised-stopiteration-every-time-i-try-to-run-app
+        logging.info("Exception {}".format(runtime_error))
 s.quit()
