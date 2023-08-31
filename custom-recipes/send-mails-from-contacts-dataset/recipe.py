@@ -92,7 +92,7 @@ if smtp_use_tls:
      
 # Use credentials if set     
 if smtp_use_auth:
-    s.login(smtp_user, smtp_pass)
+    s.login(str(smtp_user), str(smtp_pass))
         
 def send_email(contact):
     recipient = contact[recipient_column]
