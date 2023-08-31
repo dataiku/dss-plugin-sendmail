@@ -39,6 +39,11 @@ use_body_value = config.get('use_body_value', False)
 smtp_host = config.get('smtp_host', None)
 smtp_port = int(config.get('smtp_port', "25"))
 
+smtp_use_tls = config.get('smtp_use_tls', False)
+smtp_use_auth = config.get('smtp_use_auth', False)
+smtp_user = config.get('smtp_user', None)
+smtp_pass = config.get('smtp_pass', None)
+
 attachment_type = config.get('attachment_type', "csv")
 
 output_schema = list(people.read_schema())
@@ -81,7 +86,14 @@ for a in attachments:
 
 s = smtplib.SMTP(smtp_host, port=smtp_port)
 
-
+# Use TLS if set
+if smtp_use_tls:
+    s.starttls()
+     
+# Use credentials if set     
+if smtp_use_auth:
+    s.login(smtp_user, smtp_pass)
+        
 def send_email(contact):
     recipient = contact[recipient_column]
     email_text = body_value if use_body_value else contact.get(body_column, "")
