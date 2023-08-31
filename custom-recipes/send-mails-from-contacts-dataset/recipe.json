@@ -145,12 +145,12 @@
         },
 		{
             "name": "smtp_use_tls",
-            "label" : "Use TLS?",
+            "label" : "Use TLS",
             "type": "BOOLEAN"
         },
 				{
             "name": "smtp_use_auth",
-            "label" : "Use authentication?",
+            "label" : "Use authentication",
             "type": "BOOLEAN"
         },
 		{
