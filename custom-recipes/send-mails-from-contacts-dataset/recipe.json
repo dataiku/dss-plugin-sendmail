@@ -142,6 +142,28 @@
             "label" : "SMTP port",
             "defaultValue" : 25,
             "type": "INT"
+        },
+		{
+            "name": "smtp_use_tls",
+            "label" : "Use TLS",
+            "type": "BOOLEAN"
+        },
+				{
+            "name": "smtp_use_auth",
+            "label" : "Use authentication",
+            "type": "BOOLEAN"
+        },
+		{
+            "name": "smtp_user",
+            "label" : "SMTP Username",
+            "type": "STRING",
+			"visibilityCondition" : "model.smtp_use_auth"
+        },
+        {
+            "name": "smtp_pass",
+            "label" : "SMTP Password",
+            "type": "PASSWORD",
+			"visibilityCondition" : "model.smtp_use_auth"
         }
     ]
 }
