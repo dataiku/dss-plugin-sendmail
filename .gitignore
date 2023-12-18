@@ -231,3 +231,7 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 setup.cfg
 .vscode
+
+
+# IDEA IDEs
+.idea/
