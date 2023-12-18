@@ -1,5 +1,9 @@
 # Changelog
 
+## [Version 1.0.0](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.0) - Feature release - 2024-01
+
+- Improved templating capabilities
+
 ## [Version 0.2.0](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v0.2.0) - Feature release - 2023-08
 
 - Added support for python versions 3.8, 3.9, 3.10 and 3.11 (DSS-12)
