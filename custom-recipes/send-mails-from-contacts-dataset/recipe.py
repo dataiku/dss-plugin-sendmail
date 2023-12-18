@@ -1,13 +1,31 @@
 import dataiku
 from dataiku.customrecipe import get_output_names_for_role, get_input_names_for_role, get_recipe_config
-import pandas as pd
 import logging
-# Import smtplib for the actual sending function
-import smtplib
-# Import the email modules we'll need
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.application import MIMEApplication
+from email_client import SmtpConfig, SmtpEmailClient
+from attachment_handling import build_attachments
+
+
+def read_smtp_config(recipe_config):
+    """ Extract SmtpConfig (named tuple) from recipe_config dict """
+
+    smtp_host = recipe_config.get('smtp_host', None)
+    smtp_port = int(recipe_config.get('smtp_port', "25"))
+    smtp_use_tls = recipe_config.get('smtp_use_tls', False)
+    smtp_use_auth = recipe_config.get('smtp_use_auth', False)
+    smtp_user = recipe_config.get('smtp_user', None)
+    smtp_pass = recipe_config.get('smtp_pass', None)
+    return SmtpConfig()(smtp_host, smtp_port, smtp_use_tls, smtp_use_auth, smtp_user, smtp_pass)
+
+
+def send_email_for_contact(mail_client, contacts_row):
+    """ Send an email with the relevant data for the contacts_row: dict"""
+
+    recipient = contacts_row[recipient_column]
+    email_text = body_value if use_body_value else contacts_row.get(body_column, "")
+    email_subject = subject_value if use_subject_value else contacts_row.get(subject_column, "")
+    sender = sender_value if use_sender_value else contacts_row.get(sender_column, "")
+    mail_client.send_email(sender, recipient, email_text, email_subject, mime_parts, body_encoding)
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
@@ -36,21 +54,11 @@ body_value = config.get('body_value', None)
 body_encoding = config.get('body_encoding', 'us-ascii')
 use_body_value = config.get('use_body_value', False)
 
-smtp_host = config.get('smtp_host', None)
-smtp_port = int(config.get('smtp_port', "25"))
-
-smtp_use_tls = config.get('smtp_use_tls', False)
-smtp_use_auth = config.get('smtp_use_auth', False)
-smtp_user = config.get('smtp_user', None)
-smtp_pass = config.get('smtp_pass', None)
+smtp_config = read_smtp_config(config)
 
 attachment_type = config.get('attachment_type', "csv")
 
-output_schema = list(people.read_schema())
-output_schema.append({'name': 'sendmail_status', 'type': 'string'})
-output_schema.append({'name': 'sendmail_error', 'type': 'string'})
-output.write_schema(output_schema)
-
+#  Some validation, check we have things we really need
 if not body_column and not body_value:
     raise AttributeError("No body column nor body value specified")
 
@@ -59,60 +67,18 @@ for arg in ['sender', 'subject', 'body']:
     if not globals()["use_" + arg + "_value"] and globals()[arg + "_column"] not in people_columns:
         raise AttributeError("The column you specified for %s (%s) was not found." % (arg, globals()[arg + "_column"]))
 
-# Prepare attachements
-mime_parts = []
 
-for a in attachments:
+# Go go go...
 
-    if attachment_type == "excel":
-        request_fmt = "excel"
-    else:
-        request_fmt = "tsv-excel-header"
-        filename = a.full_name + ".csv"
-        mimetype = ["text", "csv"]
+# Write schema
+output_schema = list(people.read_schema())
+output_schema.append({'name': 'sendmail_status', 'type': 'string'})
+output_schema.append({'name': 'sendmail_error', 'type': 'string'})
+output.write_schema(output_schema)
 
-    with a.raw_formatted_data(format=request_fmt) as stream:
-        buf = stream.read()
+mime_parts = build_attachments(attachments, attachment_type)
 
-    if attachment_type == "excel":
-        app = MIMEApplication(buf, _subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        app.add_header("Content-Disposition", 'attachment', filename=a.full_name + ".xlsx")
-        mime_parts.append(app)
-    else:
-        txt = MIMEText(buf, _subtype="csv", _charset="utf-8")
-        txt.add_header("Content-Disposition", 'attachment', filename=a.full_name + ".csv")
-        mime_parts.append(txt)
-
-
-s = smtplib.SMTP(smtp_host, port=smtp_port)
-
-# Use TLS if set
-if smtp_use_tls:
-    s.starttls()
-     
-# Use credentials if set     
-if smtp_use_auth:
-    s.login(str(smtp_user), str(smtp_pass))
-        
-def send_email(contact):
-    recipient = contact[recipient_column]
-    email_text = body_value if use_body_value else contact.get(body_column, "")
-    email_subject = subject_value if use_subject_value else contact.get(subject_column, "")
-    sender = sender_value if use_sender_value else contact.get(sender_column, "")
-
-    msg = MIMEMultipart()
-
-    msg["From"] = sender
-    msg["To"] = recipient
-    msg["Subject"] = email_subject
-
-    # Leave some space for proper displaying of the attachment
-    msg.attach(MIMEText(email_text + '\n\n', 'plain', body_encoding))
-    for a in mime_parts:
-        msg.attach(a)
-
-    s.sendmail(sender, [recipient], msg.as_string())
-
+email_client = SmtpEmailClient(smtp_config)
 
 with output.get_writer() as writer:
     i = 0
@@ -122,7 +88,7 @@ with output.get_writer() as writer:
         for contact in people.iter_rows():
             logging.info("Sending to %s" % contact)
             try:
-                send_email(contact)
+                send_email_for_contact(email_client, contact)
                 d = dict(contact)
                 d['sendmail_status'] = 'SUCCESS'
                 success += 1
@@ -142,4 +108,4 @@ with output.get_writer() as writer:
     except RuntimeError as runtime_error:
         # https://stackoverflow.com/questions/51700960/runtimeerror-generator-raised-stopiteration-every-time-i-try-to-run-app
         logging.info("Exception {}".format(runtime_error))
-s.quit()
+email_client.quit()
