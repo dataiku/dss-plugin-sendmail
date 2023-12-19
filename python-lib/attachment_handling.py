@@ -2,7 +2,25 @@ from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
 
 
+def attachments_to_html(attachment_datasets):
+    # data structure to pass to jinja
+    attachments_dict = {}
+
+    for attachment_ds in attachment_datasets:
+        df = attachment_ds.get_dataframe()
+        attachment_entry = attachments_dict[attachment_ds.full_name.split('.')[1]] = {}
+        attachment_entry["html_table"] = df.to_html()
+
+    return attachments_dict
+
+
 def build_attachments(attachments, attachment_type):
+    """
+    :param attachments: List of attachment datasets
+    :param attachment_type: str, e.g. "excel", "csv"
+    :return: Attachments as List of MIMEApplication
+    """
+
     # Prepare attachments
     mime_parts = []
     for a in attachments:
@@ -26,7 +44,3 @@ def build_attachments(attachments, attachment_type):
             txt.add_header("Content-Disposition", 'attachment', filename=a.full_name + ".csv")
             mime_parts.append(txt)
     return mime_parts
-
-
-
-
