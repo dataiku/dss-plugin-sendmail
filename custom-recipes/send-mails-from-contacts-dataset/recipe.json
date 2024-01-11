@@ -106,7 +106,7 @@
             "name": "body_value",
             "label" : "Body (text)",
             "type": "TEXTAREA",
-            "description" :  "The body content supports JINJA templating. E.g. for a value from the input dataset use {{ column_name }}, for a table of attachment data {{ attachments.dataset_name.html_table }}, or to loop thru an attachment dataset {% for row in attachments.dataset_name.data %}{{ row.column_name }}{% endfor %} ",
+            "description" :  "The body content supports JINJA templating. E.g. for a value from the input dataset use {{ column_name }}, or to loop thru an attachment dataset {% for row in attachments.dataset_name.data %}{{ row.column_name }}{% endfor %} ",
             "defaultValue" : "{# add content underneath this - you can use JINJA templating e.g. {{ column_name }} #}",
             "visibilityCondition" : "model.use_body_value && !model.use_html_body_value"
         },
