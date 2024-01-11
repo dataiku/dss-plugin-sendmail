@@ -127,7 +127,7 @@
         {
             "name": "use_html_body_value",
             "label" : "Send as HTML",
-            "defaultValue": true,
+            "defaultValue": false,
             "description" : "Send body's custom value as HTML",
             "visibilityCondition" : "model.use_body_value",
             "type": "BOOLEAN"
