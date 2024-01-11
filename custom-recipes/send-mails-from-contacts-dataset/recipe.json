@@ -139,8 +139,8 @@
             "label" : "Body (encoding)",
             "type": "SELECT",
             "selectChoices" : [
-                {"value": "us-ascii", "label":"Default (us-ascii)"},
-                {"value": "utf-8", "label":"UTF-8"},
+                {"value": "utf-8", "label":"UTF-8 (Default)"},
+                {"value": "us-ascii", "label":"us-ascii"},
                 {"value": "latin-1", "label":"Latin-1"}
             ],
             "defaultValue": "utf-8",
