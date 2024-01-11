@@ -2,11 +2,10 @@ import dataiku
 from dataiku.customrecipe import get_output_names_for_role, get_input_names_for_role, get_recipe_config
 import logging
 from email_client import SmtpConfig, SmtpEmailClient
-from attachment_handling import build_attachments, attachments_to_html
+from attachment_handling import build_attachments, attachments_template_dict
 from jinja2 import Environment, StrictUndefined
 
 jinja_env = Environment(undefined=StrictUndefined)
-
 
 def read_smtp_config(recipe_config):
     """ Extract SmtpConfig (named tuple) from recipe_config dict """
@@ -25,9 +24,11 @@ def send_email_for_contact(mail_client, contacts_row, message_template):
     Send an email with the relevant data for the contacts_row and given template
     :param mail_client: SmtpEmailClient
     :param contacts_row: dict
-    :param message_template: jinja Template|None - email template or None if this is to generated from the row data
+    :param message_template: jinja Template|None - email template or None if this is to be generated from the row data
     Sends the message or throws an exception
     """
+
+    logging.info(attachments_templating_dict)
 
     recipient = contacts_row[recipient_column]
     if use_body_value:
@@ -70,17 +71,21 @@ subject_column = config.get('subject_column', None)
 subject_value = config.get('subject_value', None)
 use_subject_value = config.get('use_subject_value', False)
 
+use_body_value = config.get('use_body_value', False)
+use_html_body_value = config.get('use_html_body_value', False)
+
 body_column = config.get('body_column', None)
 body_value = config.get('body_value', None)
+html_body_value = config.get('html_body_value', None)
+
 body_encoding = config.get('body_encoding', 'us-ascii')
-use_body_value = config.get('use_body_value', False)
 
 smtp_config = read_smtp_config(config)
 
 attachment_type = config.get('attachment_type', "csv")
 
-#  Some validation, check we have things we really need
-if not body_column and not body_value:
+# Some validation, check we have things we really need
+if not body_column and not (use_body_value and body_value) and not (use_html_body_value and html_body_value):
     raise AttributeError("No body column nor body value specified")
 
 people_columns = [p['name'] for p in people.read_schema()]
@@ -88,9 +93,12 @@ for arg in ['sender', 'subject', 'body']:
     if not globals()["use_" + arg + "_value"] and globals()[arg + "_column"] not in people_columns:
         raise AttributeError("The column you specified for %s (%s) was not found." % (arg, globals()[arg + "_column"]))
 
-body_template = jinja_env.from_string(body_value) if use_body_value else None
-
-# Go go go...
+body_template = None
+if use_body_value:
+    if use_html_body_value:
+        body_template = jinja_env.from_string(html_body_value)
+    else:
+        body_template = jinja_env.from_string(body_value)
 
 # Write schema
 output_schema = list(people.read_schema())
@@ -99,9 +107,9 @@ output_schema.append({'name': 'sendmail_error', 'type': 'string'})
 output.write_schema(output_schema)
 
 mime_parts = build_attachments(attachments, attachment_type)
-attachments_templating_dict = attachments_to_html(attachments)
+attachments_templating_dict = attachments_template_dict(attachments)
 
-email_client = SmtpEmailClient(smtp_config)
+email_client = SmtpEmailClient(smtp_config, use_html_body_value)
 
 with output.get_writer() as writer:
     i = 0

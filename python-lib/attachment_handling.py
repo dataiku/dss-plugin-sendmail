@@ -2,14 +2,22 @@ from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
 
 
-def attachments_to_html(attachment_datasets):
-    # data structure to pass to jinja
-    attachments_dict = {}
+def attachments_template_dict(attachment_datasets):
+    """
+     :param attachments: List of attachment datasets
+     :return dictionary of attachment dataset nams each to a dict containing keys `html_table` and `data`,
+             where `data` is a list of records, each a dictionary of column names to values,
+             and `html_table` is a string of html for the table with css class `dataframe`
+             Only the first 50 rows are included.
+    """
 
+    attachments_dict = {}
     for attachment_ds in attachment_datasets:
-        df = attachment_ds.get_dataframe()
+        table_df = attachment_ds.get_dataframe().head(50)
+
         attachment_entry = attachments_dict[attachment_ds.full_name.split('.')[1]] = {}
-        attachment_entry["html_table"] = df.to_html()
+        attachment_entry["html_table"] = table_df.to_html(index=False, justify='left')
+        attachment_entry["data"] = table_df.to_dict('records')
 
     return attachments_dict
 
