@@ -72,7 +72,9 @@ subject_value = config.get('subject_value', None)
 use_subject_value = config.get('use_subject_value', False)
 
 use_body_value = config.get('use_body_value', False)
-use_html_body_value = config.get('use_html_body_value', False)
+
+# For legacy configs, assume it is text if not defined
+use_html_body_value = config.get('body_format', 'text') == 'html'
 
 body_column = config.get('body_column', None)
 body_value = config.get('body_value', None)
