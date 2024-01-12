@@ -24,17 +24,22 @@ def send_email_for_contact(mail_client, contacts_row, message_template):
     Send an email with the relevant data for the contacts_row and given template
     :param mail_client: SmtpEmailClient
     :param contacts_row: dict
-    :param message_template: jinja Template|None - email template or None if this is to be generated from the row data
+    :param message_template: jinja Template|None - email template or None if this the message is provided in the row data
     Sends the message or throws an exception
     """
-
-    logging.info(attachments_templating_dict)
 
     recipient = contacts_row[recipient_column]
     if use_body_value:
         if message_template:
             templating_value_dict = dict(contacts_row)
-            templating_value_dict["attachments"] = attachments_templating_dict
+
+            if "attachments" in templating_value_dict:
+                # If there is column in the contacts dataset called "attachments" that takes priority, but we log a warning
+                logging.warn("The input (contacts) dataset contains a column called 'attachments'. "
+                             "If you want to display attachments data with the variable 'attachments' that column will have to be renamed")
+            else:
+                # Normal case - make attachments data available for JINJA
+                templating_value_dict["attachments"] = attachments_templating_dict
             try:
                 email_text = message_template.render(templating_value_dict)
             except Exception as exp:
