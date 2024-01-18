@@ -36,6 +36,18 @@
         },
 
         {
+            "name": "mail_channel",
+            "label" : "Channel",
+            "type": "SELECT",
+            "selectChoices" : [
+                {"value": "MAILDEV", "label":"Channel MAILDEV"},
+                {"value": "smtp", "label":"Manually define SMTP"}
+            ],
+            "defaultValue": "smtp",
+            "description" : "Leverage channels"
+        },
+
+        {
             "name": "recipient_column",
             "label" : "Recipient (column)",
             "type": "COLUMN",

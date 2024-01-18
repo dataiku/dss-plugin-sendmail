@@ -1,5 +1,4 @@
-from email.mime.application import MIMEApplication
-from email.mime.text import MIMEText
+from email_client import AttachmentFile
 
 
 def attachments_template_dict(attachment_datasets):
@@ -22,11 +21,11 @@ def attachments_template_dict(attachment_datasets):
     return attachments_dict
 
 
-def build_attachments(attachment_datasets, attachment_type):
+def build_attachment_files(attachment_datasets, attachment_type):
     """
-    :param attachment_datasets: List of attachment datasets
-    :param attachment_type: str, e.g. "excel", "csv"
-    :return: Attachments as List of MIMEApplication
+        :param attachment_datasets: List of attachment datasets
+        :param attachment_type: str, e.g. "excel", "csv"
+        :return: Attachments as List of AttachmentFile
     """
 
     if attachment_type == "excel":
@@ -35,17 +34,13 @@ def build_attachments(attachment_datasets, attachment_type):
         request_fmt = "tsv-excel-header"
 
     # Prepare attachments
-    mime_parts = []
+    attachment_files = []
     for attachment_ds in attachment_datasets:
         with attachment_ds.raw_formatted_data(format=request_fmt) as stream:
-            buf = stream.read()
-
+            file_bytes = stream.read()
         if attachment_type == "excel":
-            app = MIMEApplication(buf, _subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            app.add_header("Content-Disposition", 'attachment', filename=attachment_ds.full_name + ".xlsx")
-            mime_parts.append(app)
+            attachment_files.append(AttachmentFile()(attachment_ds.full_name + ".xlsx", "application",
+                                                     "vnd.openxmlformats-officedocument.spreadsheetml.sheet", file_bytes))
         else:
-            txt = MIMEText(buf, _subtype="csv", _charset="utf-8")
-            txt.add_header("Content-Disposition", 'attachment', filename=attachment_ds.full_name + ".csv")
-            mime_parts.append(txt)
-    return mime_parts
+            attachment_files.append(AttachmentFile()(attachment_ds.full_name + ".csv", "text", "csv", file_bytes))
+    return attachment_files

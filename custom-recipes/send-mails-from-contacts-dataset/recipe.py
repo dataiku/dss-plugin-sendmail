@@ -2,10 +2,11 @@ import dataiku
 from dataiku.customrecipe import get_output_names_for_role, get_input_names_for_role, get_recipe_config
 import logging
 from email_client import SmtpConfig, SmtpEmailClient
-from attachment_handling import build_attachments, attachments_template_dict
+from attachment_handling import build_attachment_files, attachments_template_dict
 from jinja2 import Environment, StrictUndefined
 
 jinja_env = Environment(undefined=StrictUndefined)
+
 
 def read_smtp_config(recipe_config):
     """ Extract SmtpConfig (named tuple) from recipe_config dict """
@@ -51,7 +52,7 @@ def send_email_for_contact(mail_client, contacts_row, message_template):
 
     email_subject = subject_value if use_subject_value else contacts_row.get(subject_column, "")
     sender = sender_value if use_sender_value else contacts_row.get(sender_column, "")
-    mail_client.send_email(sender, recipient, email_text, email_subject, mime_parts, body_encoding)
+    mail_client.send_email(sender, recipient, email_text, email_subject, attachment_files, body_encoding)
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -61,7 +62,7 @@ output_A_names = get_output_names_for_role('output')
 output = dataiku.Dataset(output_A_names[0]) if len(output_A_names) > 0 else None
 
 people = dataiku.Dataset(get_input_names_for_role('contacts')[0])
-attachments = [dataiku.Dataset(x) for x in get_input_names_for_role('attachments')]
+attachment_datasets = [dataiku.Dataset(x) for x in get_input_names_for_role('attachments')]
 
 # Read configuration
 config = get_recipe_config()
@@ -113,8 +114,9 @@ output_schema.append({'name': 'sendmail_status', 'type': 'string'})
 output_schema.append({'name': 'sendmail_error', 'type': 'string'})
 output.write_schema(output_schema)
 
-mime_parts = build_attachments(attachments, attachment_type)
-attachments_templating_dict = attachments_template_dict(attachments)
+attachment_files = build_attachment_files(attachment_datasets, attachment_type)
+
+attachments_templating_dict = attachments_template_dict(attachment_datasets)
 
 email_client = SmtpEmailClient(smtp_config, use_html_body_value)
 

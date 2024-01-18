@@ -1,6 +1,7 @@
 from collections import namedtuple
 import smtplib
 from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 
 
@@ -9,6 +10,20 @@ def SmtpConfig():
     return namedtuple("SmtpConfig", "smtp_host, smtp_port, smtp_use_tls, smtp_use_auth, smtp_user, smtp_pass",
                       defaults=[None, 25, False, False, None, None]
                       )
+
+def AttachmentFile():
+    # str, str, str (application or text), bytes
+    return namedtuple("SmtpConfig", "file_name, mime_type, mime_subtype, data",
+                      defaults=[None, "application", None, None]
+                      )
+# class ChannelClient:
+#     def __init__(self, project_id, send_html=True):
+#
+#
+#     def send_email(self, sender, recipient, email_body, email_subject, attachment_files):
+#
+#     def quit(self):
+#         pass
 
 
 class SmtpEmailClient:
@@ -25,13 +40,13 @@ class SmtpEmailClient:
         if smtp_config.smtp_use_auth:
             self.smtp.login(str(smtp_config.smtp_user), str(smtp_config.smtp_pass))
 
-    def send_email(self, sender, recipient, email_body, email_subject, mime_parts, body_encoding):
+    def send_email(self, sender, recipient, email_body, email_subject, attachment_files, body_encoding):
         """
         :param sender: sender email, str
         :param recipient: recipient email, str
         :param email_body: body of either plain text or html, str
         :param email_subject: str
-        :param mime_parts: attachments as list of MIMEApplication
+        :param attachment_files: attachments as list of  AttachmentFile
         :param body_encoding: e.g. 'utf-8', 'us-ascii', 'latin-1'
         """
         msg = MIMEMultipart()
@@ -44,8 +59,13 @@ class SmtpEmailClient:
         else:
             msg.attach(MIMEText(email_body + '\n\n', 'plain', body_encoding))
 
-        for a in mime_parts:
-            msg.attach(a)
+        for attachment_file in attachment_files:
+            if attachment_file.mime_type == "application":
+                mime_app = MIMEApplication(attachment_file.data, _subtype=attachment_file.mime_subtype)
+            else:
+                mime_app = MIMEText(attachment_file.data, _subtype=attachment_file.mime_subtype, _charset="utf-8")
+            mime_app.add_header("Content-Disposition", 'attachment', filename=attachment_file.file_name)
+            msg.attach(mime_app)
         self.smtp.sendmail(sender, [recipient], msg.as_string())
 
     def quit(self):
