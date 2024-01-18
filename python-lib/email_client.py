@@ -40,19 +40,19 @@ class SmtpEmailClient:
         if smtp_config.smtp_use_auth:
             self.smtp.login(str(smtp_config.smtp_user), str(smtp_config.smtp_pass))
 
-    def send_email(self, sender, recipient, email_body, email_subject, attachment_files, body_encoding):
+    def send_email(self, sender, recipient, email_body, email_subject, attachment_files):
         """
         :param sender: sender email, str
         :param recipient: recipient email, str
         :param email_body: body of either plain text or html, str
         :param email_subject: str
         :param attachment_files: attachments as list of  AttachmentFile
-        :param body_encoding: e.g. 'utf-8', 'us-ascii', 'latin-1'
         """
         msg = MIMEMultipart()
         msg["From"] = sender
         msg["To"] = recipient
         msg["Subject"] = email_subject
+        body_encoding = "utf-8"
         # Attach email body in appropriate format, leaving some space for proper displaying of the attachments
         if self.send_html:
             msg.attach(MIMEText(email_body + '</b></b>', 'html', body_encoding))

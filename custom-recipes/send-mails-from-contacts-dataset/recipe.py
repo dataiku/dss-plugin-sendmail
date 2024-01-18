@@ -52,7 +52,7 @@ def send_email_for_contact(mail_client, contacts_row, message_template):
 
     email_subject = subject_value if use_subject_value else contacts_row.get(subject_column, "")
     sender = sender_value if use_sender_value else contacts_row.get(sender_column, "")
-    mail_client.send_email(sender, recipient, email_text, email_subject, attachment_files, body_encoding)
+    mail_client.send_email(sender, recipient, email_text, email_subject, attachment_files)
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -85,8 +85,6 @@ use_html_body_value = config.get('body_format', 'text') == 'html'
 body_column = config.get('body_column', None)
 body_value = config.get('body_value', None)
 html_body_value = config.get('html_body_value', None)
-
-body_encoding = config.get('body_encoding', 'us-ascii')
 
 smtp_config = read_smtp_config(config)
 

@@ -152,19 +152,6 @@
             "visibilityCondition" : "model.use_body_value"
         },
 
-
-        {
-            "name": "body_encoding",
-            "label" : "Body (encoding)",
-            "type": "SELECT",
-            "selectChoices" : [
-                {"value": "utf-8", "label":"UTF-8 (Default)"},
-                {"value": "us-ascii", "label":"us-ascii"},
-                {"value": "latin-1", "label":"Latin-1"}
-            ],
-            "defaultValue": "utf-8",
-            "description" : "Body encoding (UTF-8 recommended)"
-        },
         {
             "name": "attachment_type",
             "label" : "Attachments format",
