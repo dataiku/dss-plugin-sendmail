@@ -41,6 +41,7 @@
             "type": "SELECT",
             "selectChoices" : [
                 {"value": "MAILDEV", "label":"Channel MAILDEV"},
+                {"value": "ses-mailuser", "label":"Channel: ses-mailuser"},
                 {"value": "smtp", "label":"Manually define SMTP"}
             ],
             "defaultValue": "smtp",

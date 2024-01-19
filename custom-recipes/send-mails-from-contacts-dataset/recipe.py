@@ -1,7 +1,7 @@
 import dataiku
 from dataiku.customrecipe import get_output_names_for_role, get_input_names_for_role, get_recipe_config
 import logging
-from email_client import SmtpConfig, SmtpEmailClient
+from email_client import SmtpConfig, SmtpEmailClient, ChannelClient
 from attachment_handling import build_attachment_files, attachments_template_dict
 from jinja2 import Environment, StrictUndefined
 
@@ -79,14 +79,21 @@ use_subject_value = config.get('use_subject_value', False)
 
 use_body_value = config.get('use_body_value', False)
 
-# For legacy configs, assume it is text if not defined
-use_html_body_value = config.get('body_format', 'text') == 'html'
-
 body_column = config.get('body_column', None)
 body_value = config.get('body_value', None)
+
+# For legacy configs, assume it is text if not defined
+body_format = not config.get('body_format', 'text')
+# For sending a body from a column value we also assume it is plain text - that is the legacy behavour
+use_html_body_value = body_value and body_format == 'html'
+
 html_body_value = config.get('html_body_value', None)
 
-smtp_config = read_smtp_config(config)
+mail_channel = config.get('mail_channel', 'smtp')
+
+if mail_channel == 'smtp':
+    smtp_config = read_smtp_config(config)
+
 
 attachment_type = config.get('attachment_type', "csv")
 
@@ -116,7 +123,10 @@ attachment_files = build_attachment_files(attachment_datasets, attachment_type)
 
 attachments_templating_dict = attachments_template_dict(attachment_datasets)
 
-email_client = SmtpEmailClient(smtp_config, use_html_body_value)
+if mail_channel == 'smtp':
+    email_client = SmtpEmailClient(not use_html_body_value, smtp_config)
+else:
+    email_client = ChannelClient(not use_html_body_value, mail_channel)
 
 with output.get_writer() as writer:
     i = 0
