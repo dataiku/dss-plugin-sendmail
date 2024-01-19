@@ -28,6 +28,7 @@ class AbstractMessageClient(ABC):
         self.plain_text = plain_text
 
     def send_email(self, sender, recipient, email_body, email_subject, attachment_files):
+        # Any generic email body decoration goes here
         if self.plain_text:
             email_body_to_send = email_body + '\n\n'
 
@@ -82,7 +83,7 @@ class SmtpEmailClient(AbstractMessageClient):
         msg["Subject"] = email_subject
         body_encoding = "utf-8"
 
-        msg.attach(MIMEText(email_body + '</b></b>', 'plain' if self.plain_text else 'html', body_encoding))
+        msg.attach(MIMEText(email_body, 'plain' if self.plain_text else 'html', body_encoding))
         for attachment_file in attachment_files:
             if attachment_file.mime_type == "application":
                 mime_app = MIMEApplication(attachment_file.data, _subtype=attachment_file.mime_subtype)
