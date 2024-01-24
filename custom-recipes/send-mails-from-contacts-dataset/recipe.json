@@ -102,6 +102,54 @@
 
         {
             "name": "sep2",
+            "label": "Authentication",
+            "type": "SEPARATOR",
+            "visibilityCondition" : "model.mail_channel == null"
+        },
+
+        {
+            "name": "smtp_host",
+            "label" : "SMTP Host",
+            "defaultValue" : "localhost",
+            "type": "STRING",
+            "visibilityCondition" : "model.mail_channel == null"
+        },
+        {
+            "name": "smtp_port",
+            "label" : "SMTP port",
+            "defaultValue" : 25,
+            "type": "INT",
+            "mandatory" : true,
+            "visibilityCondition" : "model.mail_channel == null"
+        },
+        {
+            "name": "smtp_use_tls",
+            "label" : "Use TLS",
+            "type": "BOOLEAN",
+            "visibilityCondition" : "model.mail_channel == null"
+        },
+        {
+            "name": "smtp_use_auth",
+            "label" : "Use authentication",
+            "type": "BOOLEAN",
+            "visibilityCondition" : "model.mail_channel == null"
+        },
+        {
+            "name": "smtp_user",
+            "label" : "SMTP Username",
+            "type": "STRING",
+            "visibilityCondition" : "model.mail_channel == null && model.smtp_use_auth"
+        },
+        {
+            "name": "smtp_pass",
+            "label" : "SMTP Password",
+            "type": "PASSWORD",
+            "visibilityCondition" : "model.mail_channel == null && model.smtp_use_auth"
+        },
+
+
+        {
+            "name": "sep3",
             "label": "Content",
             "type": "SEPARATOR"
         },
@@ -163,51 +211,6 @@
                 {"value":  "excel" , "label":"Excel"},
                 {"value":  "csv" , "label":"CSV"}
             ]
-        },
-        {
-            "name": "sep3",
-            "label": "Authentication",
-            "type": "SEPARATOR",
-            "visibilityCondition" : "model.mail_channel == null"
-        },
-        {
-            "name": "smtp_host",
-            "label" : "SMTP Host",
-            "defaultValue" : "localhost",
-            "type": "STRING",
-            "visibilityCondition" : "model.mail_channel == null"
-        },
-        {
-            "name": "smtp_port",
-            "label" : "SMTP port",
-            "defaultValue" : 25,
-            "type": "INT",
-            "mandatory" : true,
-            "visibilityCondition" : "model.mail_channel == null"
-        },
-		{
-            "name": "smtp_use_tls",
-            "label" : "Use TLS",
-            "type": "BOOLEAN",
-            "visibilityCondition" : "model.mail_channel == null"
-        },
-		{
-            "name": "smtp_use_auth",
-            "label" : "Use authentication",
-            "type": "BOOLEAN",
-            "visibilityCondition" : "model.mail_channel == null"
-        },
-		{
-            "name": "smtp_user",
-            "label" : "SMTP Username",
-            "type": "STRING",
-			"visibilityCondition" : "model.mail_channel == null && model.smtp_use_auth"
-        },
-        {
-            "name": "smtp_pass",
-            "label" : "SMTP Password",
-            "type": "PASSWORD",
-			"visibilityCondition" : "model.mail_channel == null && model.smtp_use_auth"
         }
     ]
 }
