@@ -3,9 +3,8 @@
         "label" : "Send mails from a contacts dataset",
         "description" : "The recipe takes as input a dataset of contacts, with one row per mail to send.\n\nFor each of the following fields, a value can either be provided in the configuration (if it is the same for each email to be sent) or be read from a column in the dataset\n\n* Sender email\n* Email subject\n* Email body\n* Optionally, attachements can be provided from another dataset (and be sent as CSV or Excel).\n The output dataset is only used for reporting. Email address should generally be in the form: 'Name <local@domain.com>' "
     },
-
     "kind" : "PYTHON",
-
+    "paramsPythonSetup": "dynamic_channels.py",
     "inputRoles" : [
         {
             "name": "contacts",
@@ -39,11 +38,8 @@
             "name": "mail_channel",
             "label" : "Channel",
             "type": "SELECT",
-            "selectChoices" : [
-                {"value": "MAILDEV", "label":"Channel MAILDEV"},
-                {"value": "ses-mailuser", "label":"Channel: ses-mailuser"},
-                {"value": null, "label":"Manually define SMTP"}
-            ],
+            "getChoicesFromPython": true,
+            "disableAutoReload": true,
             "defaultValue": null,
             "description" : "Leverage channels"
         },
