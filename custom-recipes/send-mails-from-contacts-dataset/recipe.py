@@ -89,9 +89,9 @@ use_html_body_value = body_value and body_format == 'html'
 
 html_body_value = config.get('html_body_value', None)
 
-mail_channel = config.get('mail_channel', 'smtp')
+mail_channel = config.get('mail_channel', None)
 
-if mail_channel == 'smtp':
+if mail_channel == None:
     smtp_config = read_smtp_config(config)
 
 
@@ -123,7 +123,7 @@ attachment_files = build_attachment_files(attachment_datasets, attachment_type)
 
 attachments_templating_dict = attachments_template_dict(attachment_datasets)
 
-if mail_channel == 'smtp':
+if mail_channel == None:
     email_client = SmtpEmailClient(not use_html_body_value, smtp_config)
 else:
     email_client = ChannelClient(not use_html_body_value, mail_channel)

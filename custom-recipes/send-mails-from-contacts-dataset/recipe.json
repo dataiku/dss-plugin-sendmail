@@ -42,9 +42,9 @@
             "selectChoices" : [
                 {"value": "MAILDEV", "label":"Channel MAILDEV"},
                 {"value": "ses-mailuser", "label":"Channel: ses-mailuser"},
-                {"value": "smtp", "label":"Manually define SMTP"}
+                {"value": null, "label":"Manually define SMTP"}
             ],
-            "defaultValue": "smtp",
+            "defaultValue": null,
             "description" : "Leverage channels"
         },
 
@@ -164,45 +164,50 @@
                 {"value":  "csv" , "label":"CSV"}
             ]
         },
-                {
-        "name": "sep3",
-        "label": "Authentication",
-        "type": "SEPARATOR"
+        {
+            "name": "sep3",
+            "label": "Authentication",
+            "type": "SEPARATOR",
+            "visibilityCondition" : "model.mail_channel == null"
         },
         {
             "name": "smtp_host",
             "label" : "SMTP Host",
             "defaultValue" : "localhost",
             "type": "STRING",
-            "mandatory": true
+            "visibilityCondition" : "model.mail_channel == null"
         },
         {
             "name": "smtp_port",
             "label" : "SMTP port",
             "defaultValue" : 25,
-            "type": "INT"
+            "type": "INT",
+            "mandatory" : true,
+            "visibilityCondition" : "model.mail_channel == null"
         },
 		{
             "name": "smtp_use_tls",
             "label" : "Use TLS",
-            "type": "BOOLEAN"
+            "type": "BOOLEAN",
+            "visibilityCondition" : "model.mail_channel == null"
         },
-				{
+		{
             "name": "smtp_use_auth",
             "label" : "Use authentication",
-            "type": "BOOLEAN"
+            "type": "BOOLEAN",
+            "visibilityCondition" : "model.mail_channel == null"
         },
 		{
             "name": "smtp_user",
             "label" : "SMTP Username",
             "type": "STRING",
-			"visibilityCondition" : "model.smtp_use_auth"
+			"visibilityCondition" : "model.mail_channel == null && model.smtp_use_auth"
         },
         {
             "name": "smtp_pass",
             "label" : "SMTP Password",
             "type": "PASSWORD",
-			"visibilityCondition" : "model.smtp_use_auth"
+			"visibilityCondition" : "model.mail_channel == null && model.smtp_use_auth"
         }
     ]
 }
