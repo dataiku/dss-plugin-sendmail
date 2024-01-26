@@ -1,3 +1,5 @@
+SENDER_SUFFIX = "__|*_S"
+
 class DSSSelectorChoices(object):
     def __init__(self):
         self.choices = []

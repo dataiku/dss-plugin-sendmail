@@ -27,12 +27,21 @@ class AbstractMessageClient(ABC):
     def __init__(self, plain_text):
         self.plain_text = plain_text
 
-    def send_email(self, sender, recipient, email_body, email_subject, attachment_files):
+
+    def send_email(self, sender, recipient, email_subject, email_body, attachment_files):
+        """
+        :param sender: sender email, str - depending on impl, could be ignored if a sender configured for the channel
+        :param recipient: recipient email, str
+        :param email_subject: str
+        :param email_body: body of either plain text or html, str
+        :param attachment_files:attachments as list of  AttachmentFile
+        """
         # Any generic email body decoration goes here
+        email_body_to_send = email_body
         if self.plain_text:
             email_body_to_send = email_body + '\n\n'
 
-        self.send_email_impl(sender, recipient, email_body_to_send, email_subject, attachment_files)
+        self.send_email_impl(sender, recipient, email_subject, email_body_to_send, attachment_files)
 
     @abstractmethod
     def send_email_impl(self,  sender, recipient, email_body, email_subject, attachment_files):
@@ -41,15 +50,25 @@ class AbstractMessageClient(ABC):
 
 class ChannelClient(AbstractMessageClient):
     def __init__(self, plain_text, channel_id):
+        """ The channel_id will has a __S suffix added if there is a sender"""
         super().__init__(plain_text)
         self.dss_client = dataiku.api_client()
         self.project_id = dataiku.default_project_key()
         self.channel = self.dss_client.get_integration_channel(channel_id, as_type='object')
 
-    def send_email_impl(self, sender, recipient, email_body, email_subject, attachment_files):
+
+    def send_email_impl(self, sender, recipient, email_subject, email_body, attachment_files):
+        """
+        :param sender: sender email, str - is ignored if a sender configured for the channel
+        :param recipient: recipient email, str
+        :param email_subject: str
+        :param email_body: body of either plain text or html, str
+        :param attachment_files:attachments as list of  AttachmentFile
+        """
         files = [(a.file_name, a.data, f"{a.mime_type}/{a.mime_subtype}") for a in attachment_files]
 
-        self.channel.send(self.project_id, sender, [recipient], email_subject, email_body, attachments=files, plain_text=not self.plain_text)
+        sender_to_use = None if self.channel.sender else sender
+        self.channel.send(self.project_id, sender_to_use, [recipient], email_subject, email_body, attachments=files, plain_text=self.plain_text)
 
     def quit(self):
         pass
@@ -70,21 +89,14 @@ class SmtpEmailClient(AbstractMessageClient):
         if smtp_config.smtp_use_auth:
             self.smtp.login(str(smtp_config.smtp_user), str(smtp_config.smtp_pass))
 
-    def send_email_impl(self, sender, recipient, email_body, email_subject, attachment_files):
-        """
-        :param sender: sender email, str
-        :param recipient: recipient email, str
-        :param email_body: body of either plain text or html, str
-        :param email_subject: str
-        :param attachment_files: attachments as list of  AttachmentFile
-        """
+    def send_email_impl(self, sender, recipient, email_subject, email_body, attachment_files):
         msg = MIMEMultipart()
         msg["From"] = sender
         msg["To"] = recipient
         msg["Subject"] = email_subject
         body_encoding = "utf-8"
-
-        msg.attach(MIMEText(email_body, 'plain' if self.plain_text else 'html', body_encoding))
+        text_type = 'plain' if self.plain_text else 'html'
+        msg.attach(MIMEText(email_body, text_type, body_encoding))
         for attachment_file in attachment_files:
             if attachment_file.mime_type == "application":
                 mime_app = MIMEApplication(attachment_file.data, _subtype=attachment_file.mime_subtype)

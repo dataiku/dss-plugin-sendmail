@@ -1,6 +1,5 @@
-from dss_selector_choices import DSSSelectorChoices
+from dss_selector_choices import DSSSelectorChoices, SENDER_SUFFIX
 import dataiku
-
 
 def do(payload, config, plugin_config, inputs):
     choices = DSSSelectorChoices()
@@ -8,9 +7,11 @@ def do(payload, config, plugin_config, inputs):
     channels = dss_client.list_integration_channels()
     for channel in channels:
         if 'smtp' in channel.get('type') or 'mail' in channel.get('type'):
-            channel_label = f"Channel: {channel.get('id')}"
             if channel.get('sender'):
-                channel_label = channel_label + f" ({channel.get('sender')})"
-            choices.append(channel_label, channel.get('id'))
+                # If the channel has a sender append `(<sender email>)` to label and `_S` flag to channel ID
+                choices.append(f"Channel: {channel.get('id')} ({channel.get('sender')})", channel.get('id') + SENDER_SUFFIX)
+            else:
+                choices.append(f"Channel: {channel.get('id')}",  channel.get('id'))
+
     choices.append("Manually define SMTP", None)
     return choices.to_dss()

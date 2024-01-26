@@ -58,20 +58,21 @@
             "type": "COLUMN",
             "columnRole" : "contacts",
             "description" : "Sender of the email (from a column)",
-            "visibilityCondition" : "!model.use_sender_value"
+            "visibilityCondition" : "!model.use_sender_value && !model.mail_channel.endsWith('__|*_S')"
         },
         {
             "name": "sender_value",
             "label" : "Sender (value)",
             "type": "STRING",
             "description" : "Sender of the  email (provide value inline)",
-            "visibilityCondition" : "model.use_sender_value"
+            "visibilityCondition" : "model.use_sender_value && !model.mail_channel.endsWith('__|*_S')"
         },
         {
             "name": "use_sender_value",
             "label" : " ",
             "description" : "Use custom value",
-            "type": "BOOLEAN"
+            "type": "BOOLEAN",
+            "visibilityCondition" : "!model.mail_channel.endsWith('__|*_S')"
         },
         {
             "name": "subject_column",
@@ -163,7 +164,7 @@
             "name": "body_value",
             "label" : "Body (plain text)",
             "type": "TEXTAREA",
-            "description" :  "The body content supports JINJA templating. E.g. for a value from the input dataset use {{ column_name }}, or to loop thru an attachment dataset {% for row in attachments.dataset_name.data %}{{ row.column_name }}{% endfor %} ",
+            "description" :  "The body content supports JINJA templating. E.g. for a value from the input dataset use {{ column_name }}, or to loop through an attachment dataset {% for row in attachments.dataset_name.data %}{{ row.column_name }}{% endfor %} ",
             "defaultValue" : "{# add content underneath this - you can use JINJA templating e.g. {{ column_name }} #}",
             "visibilityCondition" : "model.use_body_value && (model.body_format == 'text')"
         },
@@ -171,7 +172,7 @@
             "name": "html_body_value",
             "label" : "Body (HTML)",
             "type": "TEXTAREA",
-            "description" : "The body content supports JINJA templating. E.g. for a value from the input dataset use {{ column_name }}, for a table of attachment data {{ attachments.dataset_name.html_table }}, or to loop thru an attachment dataset {% for row in attachments.dataset_name.data %}{{ row.column_name }}{% endfor %}",
+            "description" : "The body content supports JINJA templating. E.g. for a value from the input dataset use {{ column_name }}, for a table of attachment data {{ attachments.dataset_name.html_table }}, or to loop through an attachment dataset {% for row in attachments.dataset_name.data %}{{ row.column_name }}{% endfor %}",
             "defaultValue" : "<!-- Template with CSS starter kit -->\n<html><head> <style type=\"text/css\"> * { font-family: Verdana, sans-serif; } table { width: 100%; border-collapse: collapse; border: 1px solid #ddd; } th, td { padding : 10px; text-align : left; } th { background-color : #f2f2f2; }</style></head><body>\n{# add content underneath this - you can use JINJA templating, e.g. <b>{{ column_name }}</b> #}\n\n</body></html>",
             "visibilityCondition" : "model.use_body_value && (model.body_format == 'html')"
         },

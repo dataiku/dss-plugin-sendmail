@@ -2,6 +2,7 @@ import dataiku
 from dataiku.customrecipe import get_output_names_for_role, get_input_names_for_role, get_recipe_config
 import logging
 from email_client import SmtpConfig, SmtpEmailClient, ChannelClient
+from dss_selector_choices import SENDER_SUFFIX
 from attachment_handling import build_attachment_files, attachments_template_dict
 from jinja2 import Environment, StrictUndefined
 
@@ -18,6 +19,15 @@ def read_smtp_config(recipe_config):
     smtp_user = recipe_config.get('smtp_user', None)
     smtp_pass = recipe_config.get('smtp_pass', None)
     return SmtpConfig()(smtp_host, smtp_port, smtp_use_tls, smtp_use_auth, smtp_user, smtp_pass)
+
+
+def to_real_channel_id(channel_id):
+    # Remove suffix added in dynamic_channels when the channel has a sender
+    if channel_id.endswith(SENDER_SUFFIX):
+        return channel_id[:-len(SENDER_SUFFIX)]
+    else:
+        return channel_id
+
 
 
 def send_email_for_contact(mail_client, contacts_row, message_template):
@@ -51,8 +61,9 @@ def send_email_for_contact(mail_client, contacts_row, message_template):
         email_text = contacts_row.get(body_column, "")
 
     email_subject = subject_value if use_subject_value else contacts_row.get(subject_column, "")
+    # Note -  if the channel has a sender configured, the sender value will be ignored by the email client
     sender = sender_value if use_sender_value else contacts_row.get(sender_column, "")
-    mail_client.send_email(sender, recipient, email_text, email_subject, attachment_files)
+    mail_client.send_email(sender, recipient, email_subject, email_text, attachment_files)
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -83,9 +94,9 @@ body_column = config.get('body_column', None)
 body_value = config.get('body_value', None)
 
 # For legacy configs, assume it is text if not defined
-body_format = not config.get('body_format', 'text')
+body_format = config.get('body_format', 'text')
 # For sending a body from a column value we also assume it is plain text - that is the legacy behavour
-use_html_body_value = body_value and body_format == 'html'
+use_html_body_value = body_value and (body_format == 'html')
 
 html_body_value = config.get('html_body_value', None)
 
@@ -126,7 +137,7 @@ attachments_templating_dict = attachments_template_dict(attachment_datasets)
 if mail_channel == None:
     email_client = SmtpEmailClient(not use_html_body_value, smtp_config)
 else:
-    email_client = ChannelClient(not use_html_body_value, mail_channel)
+    email_client = ChannelClient(not use_html_body_value, to_real_channel_id(mail_channel))
 
 with output.get_writer() as writer:
     i = 0
