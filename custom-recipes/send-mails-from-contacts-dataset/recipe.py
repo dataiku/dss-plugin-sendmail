@@ -121,17 +121,26 @@ if mail_channel is None:
 
 attachment_type = config.get('attachment_type', "csv")
 
-# Some validation, check we have things we really need
+# Check some kind of value/column exists for body, subject, sender
+
 if not body_column and not (use_body_value and body_value) and not (use_html_body_value and html_body_value):
     raise AttributeError("No body column nor body value specified")
 
+if not subject_column and not (use_subject_value and subject_value):
+    raise AttributeError("No value provided for the subject")
+
+if not sender_column and not channel_has_sender and not (use_subject_value and sender_value):
+    raise AttributeError("No value provided for the sender")
+
+# When necessary, check the column values provided are in the contacts (people) dataset
 people_columns = [p['name'] for p in people.read_schema()]
 for arg in ['subject', 'body']:
     if not globals()["use_" + arg + "_value"] and globals()[arg + "_column"] not in people_columns:
         raise AttributeError("The column you specified for %s (%s) was not found." % (arg, globals()[arg + "_column"]))
 
-if not use_sender_value and not channel_has_sender and subject_column not in people_columns:
+if not use_sender_value and not channel_has_sender and sender_column not in people_columns:
     raise AttributeError("The column you specified for %s (%s) was not found." % ("sender", sender_column))
+
 
 body_template = None
 if use_body_value:
