@@ -43,6 +43,8 @@ def send_email_for_contact(mail_client, contacts_row, message_template):
     """
 
     recipient = contacts_row[recipient_column]
+    email_subject = subject_value if use_subject_value else contacts_row.get(subject_column, "")
+
     if use_body_value:
         if message_template:
             templating_value_dict = dict(contacts_row)
@@ -54,6 +56,15 @@ def send_email_for_contact(mail_client, contacts_row, message_template):
             else:
                 # Normal case - make attachments data available for JINJA
                 templating_value_dict["attachments"] = attachments_templating_dict
+
+            if "subject" in templating_value_dict:
+                # If there is column in the contacts dataset called "subject" that takes priority, but we log a warning
+                logging.warning("The input (contacts) dataset contains a column called 'subject'. "
+                                "If you want to display the email subject as a variable in the template, that column will have to be renamed")
+            else:
+                # Normal case - make attachments data available for JINJA
+                templating_value_dict["subject"] = email_subject
+
             try:
                 email_text = message_template.render(templating_value_dict)
             except Exception as exp:
@@ -63,7 +74,7 @@ def send_email_for_contact(mail_client, contacts_row, message_template):
     else:
         email_text = contacts_row.get(body_column, "")
 
-    email_subject = subject_value if use_subject_value else contacts_row.get(subject_column, "")
+
     # Note -  if the channel has a sender configured, the sender value will be ignored by the email client
     sender = sender_value if use_sender_value else contacts_row.get(sender_column, "")
     mail_client.send_email(sender, recipient, email_subject, email_text, attachment_files)
