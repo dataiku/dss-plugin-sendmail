@@ -173,7 +173,7 @@
             "label" : "Body (HTML)",
             "type": "TEXTAREA",
             "description" : "The body content supports JINJA templating. E.g. for a value from the input dataset use {{ column_name }}, for a table of attachment data {{ attachments.dataset_name.html_table }}, or to loop through an attachment dataset {% for row in attachments.dataset_name.data %}{{ row.column_name }}{% endfor %}",
-            "defaultValue" : "<!-- Template with CSS starter kit -->\n<html><head> <style type=\"text/css\"> * { font-family: Verdana, sans-serif; } table { width: 100%; border-collapse: collapse; border: 1px solid #ddd; } th, td { padding : 10px; text-align : left; } th { background-color : #f2f2f2; }</style></head><body>\n{# add content underneath this - you can use JINJA templating, e.g. <b>{{ column_name }}</b> #}\n\n</body></html>",
+            "defaultValue" : "<!-- Template with CSS starter kit -->\n<html><head><style type=\"text/css\"> * { font-family: Verdana, sans-serif; } table { width: 100%; border-collapse: collapse; border: 1px solid #ddd; } td { padding: 10px; text-align: left; border: 1px solid #ddd; } th { background-color: #f2f2f2; padding: 10px; text-align: left; border: 1px solid #ddd; }</style></head><body>\n{# add content underneath this - you can use JINJA templating, e.g. <b>{{ column_name }}</b> #}\n\n</body></html>",
             "visibilityCondition" : "model.use_body_value && (model.body_format == 'html')"
         },
 

@@ -29,6 +29,10 @@ def to_real_channel_id(channel_id):
         return channel_id
 
 
+def does_channel_have_sender(channel_id):
+    return channel_id is not None and channel_id.endswith(SENDER_SUFFIX)
+
+
 def send_email_for_contact(mail_client, contacts_row, message_template):
     """
     Send an email with the relevant data for the contacts_row and given template
@@ -98,12 +102,11 @@ body_format = config.get('body_format', 'text')
 use_html_body_value = body_value and (body_format == 'html')
 
 html_body_value = config.get('html_body_value', None)
-
 mail_channel = config.get('mail_channel', None)
+channel_has_sender = does_channel_have_sender(mail_channel)
 
 if mail_channel is None:
     smtp_config = read_smtp_config(config)
-
 
 attachment_type = config.get('attachment_type', "csv")
 
@@ -112,9 +115,12 @@ if not body_column and not (use_body_value and body_value) and not (use_html_bod
     raise AttributeError("No body column nor body value specified")
 
 people_columns = [p['name'] for p in people.read_schema()]
-for arg in ['sender', 'subject', 'body']:
+for arg in ['subject', 'body']:
     if not globals()["use_" + arg + "_value"] and globals()[arg + "_column"] not in people_columns:
         raise AttributeError("The column you specified for %s (%s) was not found." % (arg, globals()[arg + "_column"]))
+
+if not use_sender_value and not channel_has_sender and subject_column not in people_columns:
+    raise AttributeError("The column you specified for %s (%s) was not found." % ("sender", sender_column))
 
 body_template = None
 if use_body_value:
