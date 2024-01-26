@@ -50,11 +50,13 @@ class AbstractMessageClient(ABC):
 
 class ChannelClient(AbstractMessageClient):
     def __init__(self, plain_text, channel_id):
-        """ The channel_id will has a __S suffix added if there is a sender"""
         super().__init__(plain_text)
+
         self.dss_client = dataiku.api_client()
         self.project_id = dataiku.default_project_key()
         self.channel = self.dss_client.get_integration_channel(channel_id, as_type='object')
+
+        logging.info(f"Configured channel messaging client with channel {channel_id} - type: {self.channel.type}, sender: {self.channel.sender}")
 
 
     def send_email_impl(self, sender, recipient, email_subject, email_body, attachment_files):
@@ -80,14 +82,14 @@ class SmtpEmailClient(AbstractMessageClient):
     def __init__(self, plain_text, smtp_config):
         super().__init__(plain_text)
         self.smtp = smtplib.SMTP(smtp_config.smtp_host, port=smtp_config.smtp_port)
-
         # Use TLS if set
         if smtp_config.smtp_use_tls:
             self.smtp.starttls()
-
         # Use credentials if set
         if smtp_config.smtp_use_auth:
             self.smtp.login(str(smtp_config.smtp_user), str(smtp_config.smtp_pass))
+        logging.info(f"Configured an STMP mail client with host: {smtp_config.smtp_host}, port: {smtp_config.smtp_port}, "
+                     f"tls? {smtp_config.smtp_use_tls}, auth? {smtp_config.smtp_use_auth}")
 
     def send_email_impl(self, sender, recipient, email_subject, email_body, attachment_files):
         msg = MIMEMultipart()

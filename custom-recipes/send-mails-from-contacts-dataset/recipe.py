@@ -29,7 +29,6 @@ def to_real_channel_id(channel_id):
         return channel_id
 
 
-
 def send_email_for_contact(mail_client, contacts_row, message_template):
     """
     Send an email with the relevant data for the contacts_row and given template
@@ -46,7 +45,7 @@ def send_email_for_contact(mail_client, contacts_row, message_template):
 
             if "attachments" in templating_value_dict:
                 # If there is column in the contacts dataset called "attachments" that takes priority, but we log a warning
-                logging.warn("The input (contacts) dataset contains a column called 'attachments'. "
+                logging.warning("The input (contacts) dataset contains a column called 'attachments'. "
                              "If you want to display attachments data with the variable 'attachments' that column will have to be renamed")
             else:
                 # Normal case - make attachments data available for JINJA
@@ -102,7 +101,7 @@ html_body_value = config.get('html_body_value', None)
 
 mail_channel = config.get('mail_channel', None)
 
-if mail_channel == None:
+if mail_channel is None:
     smtp_config = read_smtp_config(config)
 
 
@@ -134,7 +133,7 @@ attachment_files = build_attachment_files(attachment_datasets, attachment_type)
 
 attachments_templating_dict = attachments_template_dict(attachment_datasets)
 
-if mail_channel == None:
+if mail_channel is None:
     email_client = SmtpEmailClient(not use_html_body_value, smtp_config)
 else:
     email_client = ChannelClient(not use_html_body_value, to_real_channel_id(mail_channel))
