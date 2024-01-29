@@ -121,24 +121,32 @@ if mail_channel is None:
 
 attachment_type = config.get('attachment_type', "csv")
 
-# Check some kind of value/column exists for body, subject, sender
+# Validation part 1 - Check some kind of value/column exists for body, subject, sender
 
-if not body_column and not (use_body_value and body_value) and not (use_html_body_value and html_body_value):
+has_body_column = body_column and not use_body_value
+has_plain_body_value = use_body_value and body_value and not use_html_body_value
+has_html_body_value = use_body_value and use_html_body_value and html_body_value
+if not (has_body_column or has_plain_body_value or has_html_body_value):
     raise AttributeError("No body column nor body value specified")
 
-if not subject_column and not (use_subject_value and subject_value):
+has_subject_column = subject_column and not use_subject_value
+has_subject_value = use_subject_value and subject_value
+if not has_subject_column and not has_subject_value:
     raise AttributeError("No value provided for the subject")
 
-if not sender_column and not channel_has_sender and not (use_subject_value and sender_value):
+
+has_sender_column = sender_column and not use_sender_value and not channel_has_sender
+has_sender_value = use_sender_value and sender_value and not channel_has_sender
+if not (channel_has_sender or has_sender_column or has_sender_value):
     raise AttributeError("No value provided for the sender")
 
-# When necessary, check the column values provided are in the contacts (people) dataset
+# Validation part 1 - when necessary, check the column values provided are in the contacts (people) dataset
 people_columns = [p['name'] for p in people.read_schema()]
 for arg in ['subject', 'body']:
     if not globals()["use_" + arg + "_value"] and globals()[arg + "_column"] not in people_columns:
         raise AttributeError("The column you specified for %s (%s) was not found." % (arg, globals()[arg + "_column"]))
 
-if not use_sender_value and not channel_has_sender and sender_column not in people_columns:
+if not channel_has_sender and not use_sender_value and sender_column not in people_columns:
     raise AttributeError("The column you specified for %s (%s) was not found." % ("sender", sender_column))
 
 

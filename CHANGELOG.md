@@ -2,7 +2,7 @@
 
 ## [Version 1.0.0](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.0) - Feature release - 2024-01
 
-- Added templating capabilities, send as HTML
+- Added templating capabilities, send as HTML, use DSS channels to send
 
 ## [Version 0.2.0](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v0.2.0) - Feature release - 2023-08
 
