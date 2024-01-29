@@ -116,9 +116,6 @@ html_body_value = config.get('html_body_value', None)
 mail_channel = config.get('mail_channel', None)
 channel_has_sender = does_channel_have_sender(mail_channel)
 
-if mail_channel is None:
-    smtp_config = read_smtp_config(config)
-
 attachment_type = config.get('attachment_type', "csv")
 
 # Validation part 1 - Check some kind of value/column exists for body, subject, sender
@@ -149,7 +146,6 @@ for arg in ['subject', 'body']:
 if not channel_has_sender and not use_sender_value and sender_column not in people_columns:
     raise AttributeError("The column you specified for %s (%s) was not found." % ("sender", sender_column))
 
-
 body_template = None
 if use_body_value:
     if use_html_body_value:
@@ -167,8 +163,8 @@ attachment_files = build_attachment_files(attachment_datasets, attachment_type)
 
 attachments_templating_dict = attachments_template_dict(attachment_datasets)
 
-if mail_channel is None:
-    email_client = SmtpEmailClient(not use_html_body_value, smtp_config)
+if mail_channel is None or mail_channel == 'direct_smtp':
+    email_client = SmtpEmailClient(not use_html_body_value, read_smtp_config(config))
 else:
     email_client = ChannelClient(not use_html_body_value, to_real_channel_id(mail_channel))
 

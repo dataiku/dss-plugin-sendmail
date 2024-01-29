@@ -49,6 +49,7 @@ class AbstractMessageClient(ABC):
 
 
 class ChannelClient(AbstractMessageClient):
+    """ Impl using DSS channels that requires DSS 12.6 or later """
     def __init__(self, plain_text, channel_id):
         super().__init__(plain_text)
 

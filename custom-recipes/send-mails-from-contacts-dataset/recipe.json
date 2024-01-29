@@ -101,7 +101,7 @@
             "name": "sep2",
             "label": "Authentication",
             "type": "SEPARATOR",
-            "visibilityCondition" : "model.mail_channel == null"
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
         },
 
         {
@@ -109,7 +109,7 @@
             "label" : "SMTP Host",
             "defaultValue" : "localhost",
             "type": "STRING",
-            "visibilityCondition" : "model.mail_channel == null"
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
         },
         {
             "name": "smtp_port",
@@ -117,31 +117,31 @@
             "defaultValue" : 25,
             "type": "INT",
             "mandatory" : true,
-            "visibilityCondition" : "model.mail_channel == null"
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
         },
         {
             "name": "smtp_use_tls",
             "label" : "Use TLS",
             "type": "BOOLEAN",
-            "visibilityCondition" : "model.mail_channel == null"
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
         },
         {
             "name": "smtp_use_auth",
             "label" : "Use authentication",
             "type": "BOOLEAN",
-            "visibilityCondition" : "model.mail_channel == null"
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
         },
         {
             "name": "smtp_user",
             "label" : "SMTP Username",
             "type": "STRING",
-            "visibilityCondition" : "model.mail_channel == null && model.smtp_use_auth"
+            "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == 'direct_smtp') && model.smtp_use_auth"
         },
         {
             "name": "smtp_pass",
             "label" : "SMTP Password",
             "type": "PASSWORD",
-            "visibilityCondition" : "model.mail_channel == null && model.smtp_use_auth"
+            "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == 'direct_smtp') && model.smtp_use_auth"
         },
 
 
