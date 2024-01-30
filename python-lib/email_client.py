@@ -55,10 +55,9 @@ class ChannelClient(AbstractMessageClient):
 
         self.dss_client = dataiku.api_client()
         self.project_id = dataiku.default_project_key()
-        self.channel = self.dss_client.get_integration_channel(channel_id, as_type='object')
+        self.channel = self.dss_client.get_messaging_channel(channel_id)
 
         logging.info(f"Configured channel messaging client with channel {channel_id} - type: {self.channel.type}, sender: {self.channel.sender}")
-
 
     def send_email_impl(self, sender, recipient, email_subject, email_body, attachment_files):
         """
@@ -71,7 +70,7 @@ class ChannelClient(AbstractMessageClient):
         files = [(a.file_name, a.data, f"{a.mime_type}/{a.mime_subtype}") for a in attachment_files]
 
         sender_to_use = None if self.channel.sender else sender
-        self.channel.send(self.project_id, sender_to_use, [recipient], email_subject, email_body, attachments=files, plain_text=self.plain_text)
+        self.channel.send(self.project_id, [recipient], email_subject, email_body, attachments=files, plain_text=self.plain_text, sender=sender_to_use)
 
     def quit(self):
         pass

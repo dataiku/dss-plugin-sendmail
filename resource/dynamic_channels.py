@@ -9,15 +9,14 @@ def do(payload, config, plugin_config, inputs):
         dss_client = dataiku.api_client()
         channels = []
         # To work for < 12.6 DSS - first check API to list channels exists, only call it if it does
-        if callable(getattr(dss_client, "list_integration_channels", None)):
-            channels = dss_client.list_integration_channels()
+        if callable(getattr(dss_client, "list_messaging_channels", None)):
+            channels = dss_client.list_messaging_channels(as_type="listitems", channel_family="mail")
         for channel in channels:
-            if 'smtp' in channel.get('type') or 'mail' in channel.get('type'):
-                if channel.get('sender'):
-                    # If the channel has a sender append `(<sender email>)` to label and `_S` flag to channel ID
-                    choices.append(f"{channel.get('id')} ({channel.get('sender')})", channel.get('id') + SENDER_SUFFIX)
-                else:
-                    choices.append(f"{channel.get('id')}",  channel.get('id'))
+            if channel.get('sender'):
+                # If the channel has a sender append `(<sender email>)` to label and SENDER_SUFFIX flag to channel ID
+                choices.append(f"{channel.get('id')} ({channel.get('sender')})", channel.get('id') + SENDER_SUFFIX)
+            else:
+                choices.append(f"{channel.get('id')}",  channel.get('id'))
 
         # Add an entry for direct SMTP
         if len(channels) > 0:
