@@ -10,13 +10,13 @@ def do(payload, config, plugin_config, inputs):
         channels = []
         # To work for < 12.6 DSS - first check API to list channels exists, only call it if it does
         if callable(getattr(dss_client, "list_messaging_channels", None)):
-            channels = dss_client.list_messaging_channels(as_type="listitems", channel_family="mail")
+            channels = dss_client.list_messaging_channels(as_type="objects", channel_family="mail")
         for channel in channels:
-            if channel.get('sender'):
+            if channel.sender:
                 # If the channel has a sender append `(<sender email>)` to label and SENDER_SUFFIX flag to channel ID
-                choices.append(f"{channel.get('id')} ({channel.get('sender')})", channel.get('id') + SENDER_SUFFIX)
+                choices.append(f"{channel.id} ({channel.sender})", channel.id + SENDER_SUFFIX)
             else:
-                choices.append(f"{channel.get('id')}",  channel.get('id'))
+                choices.append(f"{channel.id}",  channel.id)
 
         # Add an entry for direct SMTP
         if len(channels) > 0:

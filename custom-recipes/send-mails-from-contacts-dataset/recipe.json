@@ -29,7 +29,7 @@
 
     "params": [
         {
-            "name": "sep1",
+            "name": "sep-mail-settings",
             "label": "Mail Settings",
             "type": "SEPARATOR"
         },
@@ -42,6 +42,46 @@
             "disableAutoReload": true,
             "defaultValue": null,
             "description" : "Leverage channels"
+        },
+
+        {
+            "name": "smtp_host",
+            "label" : "SMTP Host",
+            "defaultValue" : "localhost",
+            "type": "STRING",
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
+        },
+        {
+            "name": "smtp_port",
+            "label" : "SMTP port",
+            "defaultValue" : 25,
+            "type": "INT",
+            "mandatory" : true,
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
+        },
+        {
+            "name": "smtp_use_tls",
+            "label" : "Use TLS",
+            "type": "BOOLEAN",
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
+        },
+        {
+            "name": "smtp_use_auth",
+            "label" : "Use authentication",
+            "type": "BOOLEAN",
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
+        },
+        {
+            "name": "smtp_user",
+            "label" : "SMTP Username",
+            "type": "STRING",
+            "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == 'direct_smtp') && model.smtp_use_auth"
+        },
+        {
+            "name": "smtp_pass",
+            "label" : "SMTP Password",
+            "type": "PASSWORD",
+            "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == 'direct_smtp') && model.smtp_use_auth"
         },
 
         {
@@ -98,55 +138,7 @@
 
 
         {
-            "name": "sep2",
-            "label": "Authentication",
-            "type": "SEPARATOR",
-            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
-        },
-
-        {
-            "name": "smtp_host",
-            "label" : "SMTP Host",
-            "defaultValue" : "localhost",
-            "type": "STRING",
-            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
-        },
-        {
-            "name": "smtp_port",
-            "label" : "SMTP port",
-            "defaultValue" : 25,
-            "type": "INT",
-            "mandatory" : true,
-            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
-        },
-        {
-            "name": "smtp_use_tls",
-            "label" : "Use TLS",
-            "type": "BOOLEAN",
-            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
-        },
-        {
-            "name": "smtp_use_auth",
-            "label" : "Use authentication",
-            "type": "BOOLEAN",
-            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
-        },
-        {
-            "name": "smtp_user",
-            "label" : "SMTP Username",
-            "type": "STRING",
-            "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == 'direct_smtp') && model.smtp_use_auth"
-        },
-        {
-            "name": "smtp_pass",
-            "label" : "SMTP Password",
-            "type": "PASSWORD",
-            "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == 'direct_smtp') && model.smtp_use_auth"
-        },
-
-
-        {
-            "name": "sep3",
+            "name": "sep_content",
             "label": "Content",
             "type": "SEPARATOR"
         },
@@ -176,8 +168,6 @@
             "defaultValue" : "<!-- Template with CSS starter kit -->\n<html><head><style type=\"text/css\"> * { font-family: Verdana, sans-serif; } table { width: 100%; border-collapse: collapse; border: 1px solid #ddd; } td { padding: 10px; text-align: left; border: 1px solid #ddd; } th { background-color: #f2f2f2; padding: 10px; text-align: left; border: 1px solid #ddd; }</style></head><body>\n{# add content underneath this - you can use JINJA templating, e.g. <b>{{ column_name }}</b> #}\n\n</body></html>",
             "visibilityCondition" : "model.use_body_value && (model.body_format == 'html')"
         },
-
-
         {
             "name": "use_body_value",
             "label" : " ",
@@ -197,7 +187,6 @@
             "description" : "Format for email body",
             "visibilityCondition" : "model.use_body_value"
         },
-
         {
             "name": "attachment_type",
             "label" : "Attachments format",
