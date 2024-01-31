@@ -33,22 +33,33 @@ def does_channel_have_sender(channel_id):
     return channel_id is not None and channel_id.endswith(SENDER_SUFFIX)
 
 
-def send_email_for_contact(mail_client, contacts_row, message_template):
+def send_email_for_contact(mail_client, contacts_row, message_template, subject_line_template):
     """
     Send an email with the relevant data for the contacts_row and given template
     :param mail_client: SmtpEmailClient
     :param contacts_row: dict
     :param message_template: jinja Template|None - email template or None if this the message is provided in the row data
+    :param subject_line_template: jinja Template|None - subject line template or None if this the subject is provided in the row data
     Sends the message or throws an exception
     """
 
     recipient = contacts_row[recipient_column]
-    email_subject = subject_value if use_subject_value else contacts_row.get(subject_column, "")
+    templating_value_dict = dict(contacts_row)
+
+    if use_subject_value:
+        if subject_line_template:
+            # Render subject before we add attachments as these wouldn't make sense in the subject line
+            try:
+                email_subject = subject_line_template.render(templating_value_dict)
+            except Exception as exp:
+                raise Exception("Could not render subject template: {} ".format(exp))
+        else:
+            raise Exception("No template was generated to use for the subject")
+    else:
+        email_subject = contacts_row.get(subject_column, "")
 
     if use_body_value:
         if message_template:
-            templating_value_dict = dict(contacts_row)
-
             if "attachments" in templating_value_dict:
                 # If there is column in the contacts dataset called "attachments" that takes priority, but we log a warning
                 logging.warning("The input (contacts) dataset contains a column called 'attachments'. "
@@ -56,18 +67,16 @@ def send_email_for_contact(mail_client, contacts_row, message_template):
             else:
                 # Normal case - make attachments data available for JINJA
                 templating_value_dict["attachments"] = attachments_templating_dict
-
             try:
                 email_text = message_template.render(templating_value_dict)
             except Exception as exp:
-                raise Exception("Could not render template: {} ".format(exp))
+                raise Exception("Could not render body template: {} ".format(exp))
         else:
             raise Exception("No template was generated to use for the message")
     else:
         email_text = contacts_row.get(body_column, "")
 
-
-    # Note -  if the channel has a sender configured, the sender value will be ignored by the email client
+    # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
     sender = sender_value if use_sender_value else contacts_row.get(sender_column, "")
     mail_client.send_email(sender, recipient, email_subject, email_text, attachment_files)
 
@@ -110,7 +119,7 @@ channel_has_sender = does_channel_have_sender(mail_channel)
 
 attachment_type = config.get('attachment_type', "csv")
 
-# Validation part 1 - Check some kind of value/column exists for body, subject, sender
+# Validation part 1 - Check some kind of value/column exists for body, subject and sender
 
 has_body_column = body_column and not use_body_value
 has_plain_body_value = use_body_value and body_value and not use_html_body_value
@@ -129,7 +138,7 @@ has_sender_value = use_sender_value and sender_value and not channel_has_sender
 if not (channel_has_sender or has_sender_column or has_sender_value):
     raise AttributeError("No value provided for the sender")
 
-# Validation part 1 - when necessary, check the column values provided are in the contacts (people) dataset
+# Validation part 2 - when necessary, check the column values provided are in the contacts (people) dataset
 people_columns = [p['name'] for p in people.read_schema()]
 for arg in ['subject', 'body']:
     if not globals()["use_" + arg + "_value"] and globals()[arg + "_column"] not in people_columns:
@@ -138,12 +147,19 @@ for arg in ['subject', 'body']:
 if not channel_has_sender and not use_sender_value and sender_column not in people_columns:
     raise AttributeError("The column you specified for %s (%s) was not found." % ("sender", sender_column))
 
+
+# Create Jinja templates if needed
+
 body_template = None
 if use_body_value:
     if use_html_body_value:
         body_template = jinja_env.from_string(html_body_value)
     else:
         body_template = jinja_env.from_string(body_value)
+
+subject_template = None
+if use_subject_value:
+    subject_template = jinja_env.from_string(subject_value)
 
 # Write schema
 output_schema = list(people.read_schema())
@@ -168,7 +184,7 @@ with output.get_writer() as writer:
         for contact in people.iter_rows():
             logging.info("Sending to %s" % contact)
             try:
-                send_email_for_contact(email_client, contact, body_template)
+                send_email_for_contact(email_client, contact, body_template, subject_template)
                 d = dict(contact)
                 d['sendmail_status'] = 'SUCCESS'
                 success += 1
