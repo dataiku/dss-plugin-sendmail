@@ -57,14 +57,6 @@ def send_email_for_contact(mail_client, contacts_row, message_template):
                 # Normal case - make attachments data available for JINJA
                 templating_value_dict["attachments"] = attachments_templating_dict
 
-            if "subject" in templating_value_dict:
-                # If there is column in the contacts dataset called "subject" that takes priority, but we log a warning
-                logging.warning("The input (contacts) dataset contains a column called 'subject'. "
-                                "If you want to display the email subject as a variable in the template, that column will have to be renamed")
-            else:
-                # Normal case - make attachments data available for JINJA
-                templating_value_dict["subject"] = email_subject
-
             try:
                 email_text = message_template.render(templating_value_dict)
             except Exception as exp:
