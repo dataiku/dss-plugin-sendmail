@@ -1,7 +1,7 @@
 {
     "meta" : {
         "label" : "Send mails from a contacts dataset",
-        "description" : "This recipe accepts input from two types of sources:\n\n##### 1. Single Contact Dataset (mandatory):\n- Each row in this dataset represents a distinct contact along with associated information, including an email address.\n- The plugin processes each row individually to send personalized emails to each recipient.\n- Reference variables from this dataset using the format: `{{column_name}}`.\n\n##### 2. Optional Attachments:\n- These are additional datasets that can be attached directly to the emails, and they can be in CSV or Excel format.\n- You can incorporate them into the email body as HTML tables using: `{{attachments.dataset_name.html_table}}`.\n- For more customized inclusion of data attachments within the email body, use the following loop:\n```\n    {% for row in attachments.dataset_name.data %}\n        {{ row.column_name }}\n    {% endfor %}\n```\nThe output dataset logs the status of the sent emails. Review this dataset after running the recipe to check the email send status."
+        "description" : "Send personalised emails for every row in a Contacts dataset (mandatory), with data from Attachments datasets (optional) as CSV or Excel attachments, and use JINJA templating to show data in the email body. The output dataset shows the status of sent emails - please review it even if the job succeeds."
     },
     "kind" : "PYTHON",
     "paramsPythonSetup": "dynamic_channels.py",
