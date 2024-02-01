@@ -10,17 +10,13 @@ from email.mime.multipart import MIMEMultipart
 
 def SmtpConfig():
     # str, int, bool, bool, str, str
-    return namedtuple("SmtpConfig", "smtp_host, smtp_port, smtp_use_tls, smtp_use_auth, smtp_user, smtp_pass",
-                      defaults=[None, 25, False, False, None, None]
-                      )
+    return namedtuple("SmtpConfig", "smtp_host, smtp_port, smtp_use_tls, smtp_use_auth, smtp_user, smtp_pass")
 
 
 def AttachmentFile():
     """ Format for an attachment file with the info broken down nicely for both the client classes """
     # str, str, str ('application' or 'text'), bytes
-    return namedtuple("SmtpConfig", "file_name, mime_type, mime_subtype, data",
-                      defaults=[None, "application", None, None]
-                      )
+    return namedtuple("AttachmentFile", "file_name, mime_type, mime_subtype, data")
 
 
 class AbstractMessageClient(ABC):
