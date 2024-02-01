@@ -1,9 +1,9 @@
-from email_client import AttachmentFile
+from dku_email_client import AttachmentFile
 
 
 def attachments_template_dict(attachment_datasets):
     """
-     :param attachments: List of attachment datasets
+     :param attachments_datasets: List of attachment datasets (DSS datasets)
      :return dictionary of attachment dataset nams each to a dict containing keys `html_table` and `data`,
              where `data` is a list of records, each a dictionary of column names to values,
              and `html_table` is a string of html for the table with css class `dataframe`

@@ -1,9 +1,9 @@
 import dataiku
 from dataiku.customrecipe import get_output_names_for_role, get_input_names_for_role, get_recipe_config
 import logging
-from email_client import SmtpConfig, SmtpEmailClient, ChannelClient
+from dku_email_client import SmtpConfig, SmtpEmailClient, ChannelClient
 from dss_selector_choices import SENDER_SUFFIX
-from attachment_handling import build_attachment_files, attachments_template_dict
+from dku_attachment_handling import build_attachment_files, attachments_template_dict
 from jinja2 import Environment, StrictUndefined
 
 jinja_env = Environment(undefined=StrictUndefined)
