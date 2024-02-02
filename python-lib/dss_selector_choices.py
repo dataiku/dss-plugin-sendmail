@@ -34,6 +34,7 @@ class DSSSelectorChoices(object):
                     "label": choice_key,
                     "value": choices.get(choice_key)
                 })
+            return {"choices": returned_choices}
 
     def text_message(self, text_message):
         return self._build_select_choices(text_message)
