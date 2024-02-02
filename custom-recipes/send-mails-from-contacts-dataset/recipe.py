@@ -119,7 +119,7 @@ channel_has_sender = does_channel_have_sender(mail_channel)
 
 attachment_type = config.get('attachment_type', "csv")
 
-# Validation part 1 - Check some kind of value/column exists for body, subject and sender
+# Validation part 1 - Check some kind of value/column exists for body, subject, sender and recipient
 
 has_body_column = body_column and not use_body_value
 has_plain_body_value = use_body_value and body_value and not use_html_body_value
@@ -132,11 +132,14 @@ has_subject_value = use_subject_value and subject_value
 if not has_subject_column and not has_subject_value:
     raise AttributeError("No value provided for the subject")
 
-
 has_sender_column = sender_column and not use_sender_value and not channel_has_sender
 has_sender_value = use_sender_value and sender_value and not channel_has_sender
 if not (channel_has_sender or has_sender_column or has_sender_value):
     raise AttributeError("No value provided for the sender")
+
+if not recipient_column:
+    raise AttributeError("No value provided for the recipient")
+
 
 # Validation part 2 - when necessary, check the column values provided are in the contacts (people) dataset
 people_columns = [p['name'] for p in people.read_schema()]
@@ -145,7 +148,10 @@ for arg in ['subject', 'body']:
         raise AttributeError("The column you specified for %s (%s) was not found." % (arg, globals()[arg + "_column"]))
 
 if not channel_has_sender and not use_sender_value and sender_column not in people_columns:
-    raise AttributeError("The column you specified for %s (%s) was not found." % ("sender", sender_column))
+    raise AttributeError("The column you specified for sender (%s) was not found." % sender_column)
+
+if recipient_column not in people_columns:
+    raise AttributeError("The column you specified for recipient (%s) was not found." % recipient_column)
 
 
 # Create Jinja templates if needed
