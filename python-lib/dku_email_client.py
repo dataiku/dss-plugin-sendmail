@@ -53,7 +53,8 @@ class ChannelClient(AbstractMessageClient):
         self.project_id = dataiku.default_project_key()
         self.channel = self.dss_client.get_messaging_channel(channel_id)
 
-        logging.info(f"Configured channel messaging client with channel {channel_id} - type: {self.channel.type}, sender: {self.channel.sender}")
+        logging.info(f"Configured channel messaging client with channel {channel_id} - type: {self.channel.type}, "
+                     f"sender: {self.channel.sender}, plain_text? {self.plain_text}")
 
     def send_email_impl(self, sender, recipient, email_subject, email_body, attachment_files):
         """
@@ -85,7 +86,7 @@ class SmtpEmailClient(AbstractMessageClient):
         if smtp_config.smtp_use_auth:
             self.smtp.login(str(smtp_config.smtp_user), str(smtp_config.smtp_pass))
         logging.info(f"Configured an STMP mail client with host: {smtp_config.smtp_host}, port: {smtp_config.smtp_port}, "
-                     f"tls? {smtp_config.smtp_use_tls}, auth? {smtp_config.smtp_use_auth}")
+                     f"tls? {smtp_config.smtp_use_tls}, auth? {smtp_config.smtp_use_auth}, plain_text? {self.plain_text}")
 
     def send_email_impl(self, sender, recipient, email_subject, email_body, attachment_files):
         msg = MIMEMultipart()

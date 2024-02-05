@@ -111,7 +111,7 @@ body_value = config.get('body_value', None)
 # For legacy configs, assume it is text if not defined
 body_format = config.get('body_format', 'text')
 # For sending a body from a column value we also assume it is plain text - that is the legacy behavour
-use_html_body_value = body_value and (body_format == 'html')
+use_html_body_value = use_body_value and (body_format == 'html')
 
 html_body_value = config.get('html_body_value', None)
 mail_channel = config.get('mail_channel', None)
