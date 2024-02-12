@@ -235,3 +235,4 @@ setup.cfg
 
 # IDEA IDEs
 .idea/
+/sendmail.iml

@@ -1,11 +1,10 @@
 {
     "meta" : {
         "label" : "Send mails from a contacts dataset",
-        "description" : "The recipe takes as input a dataset of contacts, with one row per mail to send.\n\nFor each of the following fields, a value can either be provided in the configuration (if it is the same for each email to be sent) or be read from a column in the dataset\n\n* Sender email\n* Email subject\n* Email body\n* Optionally, attachements can be provided from another dataset (and be sent as CSV or Excel).\n The output dataset is only used for reporting. Email address should generally be in the form: 'Name <local@domain.com>' "
+        "description" : "Send personalised emails for every row in a Contacts dataset (mandatory), with data from Attachments datasets (optional) as CSV or Excel attachments, and use JINJA templating to show data in the email body. The output dataset shows the status of sent emails - please review it even if the job succeeds."
     },
-
     "kind" : "PYTHON",
-
+    "paramsPythonSetup": "dynamic_channels.py",
     "inputRoles" : [
         {
             "name": "contacts",
@@ -30,9 +29,59 @@
 
     "params": [
         {
-            "name": "sep1",
+            "name": "sep-mail-settings",
             "label": "Mail Settings",
             "type": "SEPARATOR"
+        },
+
+        {
+            "name": "mail_channel",
+            "label" : "Channel",
+            "type": "SELECT",
+            "getChoicesFromPython": true,
+            "disableAutoReload": true,
+            "defaultValue": null,
+            "description" : "Leverage channels"
+        },
+
+        {
+            "name": "smtp_host",
+            "label" : "SMTP Host",
+            "defaultValue" : "localhost",
+            "type": "STRING",
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
+        },
+        {
+            "name": "smtp_port",
+            "label" : "SMTP port",
+            "defaultValue" : 25,
+            "type": "INT",
+            "mandatory" : true,
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
+        },
+        {
+            "name": "smtp_use_tls",
+            "label" : "Use TLS",
+            "type": "BOOLEAN",
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
+        },
+        {
+            "name": "smtp_use_auth",
+            "label" : "Use authentication",
+            "type": "BOOLEAN",
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
+        },
+        {
+            "name": "smtp_user",
+            "label" : "SMTP Username",
+            "type": "STRING",
+            "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == 'direct_smtp') && model.smtp_use_auth"
+        },
+        {
+            "name": "smtp_pass",
+            "label" : "SMTP Password",
+            "type": "PASSWORD",
+            "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == 'direct_smtp') && model.smtp_use_auth"
         },
 
         {
@@ -49,20 +98,21 @@
             "type": "COLUMN",
             "columnRole" : "contacts",
             "description" : "Sender of the email (from a column)",
-            "visibilityCondition" : "!model.use_sender_value"
+            "visibilityCondition" : "!model.use_sender_value && !model.mail_channel.endsWith('__|*_S')"
         },
         {
             "name": "sender_value",
             "label" : "Sender (value)",
             "type": "STRING",
             "description" : "Sender of the  email (provide value inline)",
-            "visibilityCondition" : "model.use_sender_value"
+            "visibilityCondition" : "model.use_sender_value && !model.mail_channel.endsWith('__|*_S')"
         },
         {
             "name": "use_sender_value",
             "label" : " ",
             "description" : "Use custom value",
-            "type": "BOOLEAN"
+            "type": "BOOLEAN",
+            "visibilityCondition" : "!model.mail_channel.endsWith('__|*_S')"
         },
         {
             "name": "subject_column",
@@ -88,7 +138,7 @@
 
 
         {
-            "name": "sep2",
+            "name": "sep_content",
             "label": "Content",
             "type": "SEPARATOR"
         },
@@ -106,7 +156,7 @@
             "name": "body_value",
             "label" : "Body (plain text)",
             "type": "TEXTAREA",
-            "description" :  "The body content supports JINJA templating. E.g. for a value from the input dataset use {{ column_name }}, or to loop thru an attachment dataset {% for row in attachments.dataset_name.data %}{{ row.column_name }}{% endfor %} ",
+            "description" :  "The body content supports JINJA templating. E.g. for a value from the input dataset use {{ column_name }}, or to loop through an attachment dataset {% for row in attachments.dataset_name.data %}{{ row.column_name }}{% endfor %} ",
             "defaultValue" : "{# add content underneath this - you can use JINJA templating e.g. {{ column_name }} #}",
             "visibilityCondition" : "model.use_body_value && (model.body_format == 'text')"
         },
@@ -114,12 +164,10 @@
             "name": "html_body_value",
             "label" : "Body (HTML)",
             "type": "TEXTAREA",
-            "description" : "The body content supports JINJA templating. E.g. for a value from the input dataset use {{ column_name }}, for a table of attachment data {{ attachments.dataset_name.html_table }}, or to loop thru an attachment dataset {% for row in attachments.dataset_name.data %}{{ row.column_name }}{% endfor %}",
-            "defaultValue" : "<!-- Template with CSS starter kit -->\n<html><head> <style type=\"text/css\"> * { font-family: Verdana, sans-serif; } table { width: 100%; border-collapse: collapse; border: 1px solid #ddd; } th, td { padding : 10px; text-align : left; } th { background-color : #f2f2f2; }</style></head><body>\n{# add content underneath this - you can use JINJA templating, e.g. <b>{{ column_name }}</b> #}\n\n</body></html>",
+            "description" : "The body content supports JINJA templating. E.g. for a value from the input dataset use {{ column_name }}, for a table of attachment data {{ attachments.dataset_name.html_table }}, or to loop through an attachment dataset {% for row in attachments.dataset_name.data %}{{ row.column_name }}{% endfor %}",
+            "defaultValue" : "<!-- Template with CSS starter kit -->\n<html><head><style type=\"text/css\"> * { font-family: Verdana, sans-serif; } table { width: 100%; border-collapse: collapse; border: 1px solid #ddd; } td { padding: 10px; text-align: left; border: 1px solid #ddd; } th { background-color: #f2f2f2; padding: 10px; text-align: left; border: 1px solid #ddd; }</style></head><body>\n{# add content underneath this - you can use JINJA templating, e.g. <b>{{ column_name }}</b> #}\n\n</body></html>",
             "visibilityCondition" : "model.use_body_value && (model.body_format == 'html')"
         },
-
-
         {
             "name": "use_body_value",
             "label" : " ",
@@ -139,20 +187,6 @@
             "description" : "Format for email body",
             "visibilityCondition" : "model.use_body_value"
         },
-
-
-        {
-            "name": "body_encoding",
-            "label" : "Body (encoding)",
-            "type": "SELECT",
-            "selectChoices" : [
-                {"value": "utf-8", "label":"UTF-8 (Default)"},
-                {"value": "us-ascii", "label":"us-ascii"},
-                {"value": "latin-1", "label":"Latin-1"}
-            ],
-            "defaultValue": "utf-8",
-            "description" : "Body encoding (UTF-8 recommended)"
-        },
         {
             "name": "attachment_type",
             "label" : "Attachments format",
@@ -163,46 +197,6 @@
                 {"value":  "excel" , "label":"Excel"},
                 {"value":  "csv" , "label":"CSV"}
             ]
-        },
-                {
-        "name": "sep3",
-        "label": "Authentication",
-        "type": "SEPARATOR"
-        },
-        {
-            "name": "smtp_host",
-            "label" : "SMTP Host",
-            "defaultValue" : "localhost",
-            "type": "STRING",
-            "mandatory": true
-        },
-        {
-            "name": "smtp_port",
-            "label" : "SMTP port",
-            "defaultValue" : 25,
-            "type": "INT"
-        },
-		{
-            "name": "smtp_use_tls",
-            "label" : "Use TLS",
-            "type": "BOOLEAN"
-        },
-				{
-            "name": "smtp_use_auth",
-            "label" : "Use authentication",
-            "type": "BOOLEAN"
-        },
-		{
-            "name": "smtp_user",
-            "label" : "SMTP Username",
-            "type": "STRING",
-			"visibilityCondition" : "model.smtp_use_auth"
-        },
-        {
-            "name": "smtp_pass",
-            "label" : "SMTP Password",
-            "type": "PASSWORD",
-			"visibilityCondition" : "model.smtp_use_auth"
         }
     ]
 }
