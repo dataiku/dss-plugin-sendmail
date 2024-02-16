@@ -197,6 +197,13 @@
                 {"value":  "excel" , "label":"Excel"},
                 {"value":  "csv" , "label":"CSV"}
             ]
+        },
+        {
+            "name": "apply_coloring_excel",
+            "label" : "Apply conditional formatting",
+            "description" : "Color cells by rules, when applicable",
+            "type": "BOOLEAN",
+            "visibilityCondition" : "model.attachment_type == 'excel'"
         }
     ]
 }

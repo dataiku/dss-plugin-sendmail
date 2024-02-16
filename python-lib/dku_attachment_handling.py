@@ -21,22 +21,25 @@ def attachments_template_dict(attachment_datasets):
     return attachments_dict
 
 
-def build_attachment_files(attachment_datasets, attachment_type):
+def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_excel):
     """
         :param attachment_datasets: List of attachment datasets
         :param attachment_type: str, e.g. "excel", "csv"
+        :param apply_coloring_excel: boolean, whether to apply conditional formatting (aka coloring) for Excel attachments
         :return: Attachments as List of AttachmentFile
     """
 
     if attachment_type == "excel":
         request_fmt = "excel"
+        format_params = {"applyColoring": apply_coloring_excel}
     else:
         request_fmt = "tsv-excel-header"
+        format_params = None
 
     # Prepare attachments
     attachment_files = []
     for attachment_ds in attachment_datasets:
-        with attachment_ds.raw_formatted_data(format=request_fmt) as stream:
+        with attachment_ds.raw_formatted_data(format=request_fmt, format_params=format_params) as stream:
             file_bytes = stream.read()
         if attachment_type == "excel":
             attachment_files.append(AttachmentFile()(attachment_ds.full_name + ".xlsx", "application",

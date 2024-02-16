@@ -108,6 +108,8 @@ use_body_value = config.get('use_body_value', False)
 body_column = config.get('body_column', None)
 body_value = config.get('body_value', None)
 
+apply_coloring_excel = config.get('apply_coloring_excel', False)
+
 # For legacy configs, assume it is text if not defined
 body_format = config.get('body_format', 'text')
 # For sending a body from a column value we also assume it is plain text - that is the legacy behavour
@@ -173,7 +175,7 @@ output_schema.append({'name': 'sendmail_status', 'type': 'string'})
 output_schema.append({'name': 'sendmail_error', 'type': 'string'})
 output.write_schema(output_schema)
 
-attachment_files = build_attachment_files(attachment_datasets, attachment_type)
+attachment_files = build_attachment_files(attachment_datasets, attachment_type, apply_coloring_excel)
 
 attachments_templating_dict = attachments_template_dict(attachment_datasets)
 
