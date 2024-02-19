@@ -191,19 +191,16 @@
             "name": "attachment_type",
             "label" : "Attachments format",
             "type": "SELECT",
-            "defaultValue" : "csv",
-            "description" : "File format for attachments",
-            "selectChoices" : [
-                {"value":  "excel" , "label":"Excel"},
-                {"value":  "csv" , "label":"CSV"}
-            ]
+            "defaultValue" : null,
+            "getChoicesFromPython": true,
+            "description" : "File format for attachments"
         },
         {
             "name": "apply_coloring_excel",
             "label" : "Apply conditional formatting",
             "description" : "Color cells by rules, when applicable",
             "type": "BOOLEAN",
-            "visibilityCondition" : "model.attachment_type == 'excel'"
+            "visibilityCondition" : "model.attachment_type == 'excel_can_ac'"
         }
     ]
 }

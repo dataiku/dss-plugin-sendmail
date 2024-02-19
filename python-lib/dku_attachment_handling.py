@@ -1,5 +1,5 @@
 from dku_email_client import AttachmentFile
-
+import logging
 
 def attachments_template_dict(attachment_datasets):
     """
@@ -24,14 +24,16 @@ def attachments_template_dict(attachment_datasets):
 def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_excel):
     """
         :param attachment_datasets: List of attachment datasets
-        :param attachment_type: str, e.g. "excel", "csv"
+        :param attachment_type: str, e.g. "excel", "csv" - "excel_can_ac" is treated as excel
         :param apply_coloring_excel: boolean, whether to apply conditional formatting (aka coloring) for Excel attachments
         :return: Attachments as List of AttachmentFile
     """
+    logging.info(f"Building attachments, type: {attachment_type}, apply colouring? {apply_coloring_excel}")
+    is_excel = attachment_type == "excel" or attachment_type == "excel_can_ac"
 
-    if attachment_type == "excel":
+    if is_excel:
         request_fmt = "excel"
-        format_params = {"applyColoring": apply_coloring_excel}
+        format_params = {"applyColoring": (apply_coloring_excel and attachment_type == "excel_can_ac")}
     else:
         request_fmt = "tsv-excel-header"
         format_params = None
@@ -41,7 +43,7 @@ def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_
     for attachment_ds in attachment_datasets:
         with attachment_ds.raw_formatted_data(format=request_fmt, format_params=format_params) as stream:
             file_bytes = stream.read()
-        if attachment_type == "excel":
+        if is_excel:
             attachment_files.append(AttachmentFile()(attachment_ds.full_name + ".xlsx", "application",
                                                      "vnd.openxmlformats-officedocument.spreadsheetml.sheet", file_bytes))
         else:
