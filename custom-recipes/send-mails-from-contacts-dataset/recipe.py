@@ -22,7 +22,7 @@ def read_smtp_config(recipe_config):
 
 
 def to_real_channel_id(channel_id):
-    # Remove suffix added in dynamic_channels when the channel has a sender
+    # Remove suffix added in dynamic_form when the channel has a sender
     if channel_id.endswith(SENDER_SUFFIX):
         return channel_id[:-len(SENDER_SUFFIX)]
     else:

@@ -4,7 +4,7 @@
         "description" : "Send personalised emails for every row in a Contacts dataset (mandatory), with data from Attachments datasets (optional) as CSV or Excel attachments, and use JINJA templating to show data in the email body. The output dataset shows the status of sent emails - please review it even if the job succeeds."
     },
     "kind" : "PYTHON",
-    "paramsPythonSetup": "dynamic_channels.py",
+    "paramsPythonSetup": "dynamic_form.py",
     "inputRoles" : [
         {
             "name": "contacts",
