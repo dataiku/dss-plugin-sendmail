@@ -160,7 +160,7 @@ if recipient_column not in people_columns:
 
 body_template = None
 if use_body_value:
-    if use_html_body_value:
+    if body_format == 'html':
         body_template = jinja_env.from_string(html_body_value)
     else:
         body_template = jinja_env.from_string(body_value)
