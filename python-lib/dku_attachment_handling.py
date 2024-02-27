@@ -1,9 +1,10 @@
 from dku_email_client import AttachmentFile
 import logging
 
+
 def attachments_template_dict(attachment_datasets):
     """
-     :param attachments_datasets: List of attachment datasets (DSS datasets)
+     :param attachment_datasets: List of attachment datasets (DSS datasets)
      :return dictionary of attachment dataset nams each to a dict containing keys `html_table` and `data`,
              where `data` is a list of records, each a dictionary of column names to values,
              and `html_table` is a string of html for the table with css class `dataframe`
@@ -31,12 +32,13 @@ def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_
     logging.info(f"Building attachments, type: {attachment_type}, apply colouring? {apply_coloring_excel}")
     is_excel = attachment_type == "excel" or attachment_type == "excel_can_ac"
 
+    format_params = None
     if is_excel:
         request_fmt = "excel"
-        format_params = {"applyColoring": (apply_coloring_excel and attachment_type == "excel_can_ac")}
+        if apply_coloring_excel and attachment_type == "excel_can_ac":
+            format_params = {"applyColoring": True}
     else:
         request_fmt = "tsv-excel-header"
-        format_params = None
 
     # Prepare attachments
     attachment_files = []

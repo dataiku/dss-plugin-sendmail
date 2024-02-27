@@ -2,8 +2,9 @@ from dss_selector_choices import DSSSelectorChoices, SENDER_SUFFIX
 import dataiku
 
 
-def is_12_6_plus(dss_client):
-    # Check for existance of messaging channel API we added in 12.6
+def supports_messaging_channels_and_conditional_formatting(dss_client):
+    # Check for existence of messaging channel API we added in 12.6
+    # If this is here we also support conditional formatting, as this was done in the same version
     return callable(getattr(dss_client, "list_messaging_channels", None))
 
 
@@ -14,7 +15,7 @@ def do(payload, config, plugin_config, inputs):
     if parameter_name == "mail_channel":
         choices = DSSSelectorChoices()
         channels = []
-        if is_12_6_plus(dss_client):
+        if supports_messaging_channels_and_conditional_formatting(dss_client):
             channels = dss_client.list_messaging_channels(as_type="objects", channel_family="mail")
         for channel in channels:
             if channel.sender:
@@ -34,7 +35,7 @@ def do(payload, config, plugin_config, inputs):
 
     if parameter_name == "attachment_type":
         choices = DSSSelectorChoices()
-        if is_12_6_plus(dss_client):
+        if supports_messaging_channels_and_conditional_formatting(dss_client):
             # Added excel and give it the key excel_can_ac to indicate to the UI that we can show the
             # apply coloring ("apply conditional formatting") option
             choices.append("Excel", "excel_can_ac")
