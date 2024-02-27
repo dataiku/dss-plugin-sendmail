@@ -19,7 +19,7 @@ def read_smtp_config(recipe_config):
     smtp_use_auth = recipe_config.get('smtp_use_auth', False)
     smtp_user = recipe_config.get('smtp_user', None)
     smtp_pass = recipe_config.get('smtp_pass', None)
-    return SmtpConfig()(smtp_host, smtp_port, smtp_use_tls, smtp_use_auth, smtp_user, smtp_pass)
+    return SmtpConfig(smtp_host, smtp_port, smtp_use_tls, smtp_use_auth, smtp_user, smtp_pass)
 
 
 def to_real_channel_id(channel_id):

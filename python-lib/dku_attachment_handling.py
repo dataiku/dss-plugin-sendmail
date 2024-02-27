@@ -39,8 +39,8 @@ def build_attachment_files(attachment_datasets, attachment_type):
         with attachment_ds.raw_formatted_data(format=request_fmt) as stream:
             file_bytes = stream.read()
         if attachment_type == "excel":
-            attachment_files.append(AttachmentFile()(attachment_ds.full_name + ".xlsx", "application",
+            attachment_files.append(AttachmentFile(attachment_ds.full_name + ".xlsx", "application",
                                                      "vnd.openxmlformats-officedocument.spreadsheetml.sheet", file_bytes))
         else:
-            attachment_files.append(AttachmentFile()(attachment_ds.full_name + ".csv", "text", "csv", file_bytes))
+            attachment_files.append(AttachmentFile(attachment_ds.full_name + ".csv", "text", "csv", file_bytes))
     return attachment_files
