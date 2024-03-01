@@ -92,6 +92,7 @@ def send_email_for_contact(mail_client, contact_dict, message_template, subject_
 # Get handles on datasets
 output_A_names = get_output_names_for_role('output')
 output = dataiku.Dataset(output_A_names[0]) if len(output_A_names) > 0 else None
+project_key = output.project_key
 
 people = dataiku.Dataset(get_input_names_for_role('contacts')[0])
 attachment_datasets = [dataiku.Dataset(x) for x in get_input_names_for_role('attachments')]
@@ -181,7 +182,7 @@ output.write_schema(output_schema)
 
 attachment_files = build_attachment_files(attachment_datasets, attachment_type)
 
-attachments_templating_dict = attachments_template_dict(attachment_datasets)
+attachments_templating_dict = attachments_template_dict(attachment_datasets, project_key)
 
 if mail_channel is None or mail_channel == '__DKU__DIRECT_SMTP__':
     email_client = SmtpEmailClient(not use_html_body_value, read_smtp_config(config))

@@ -1,9 +1,11 @@
 from dku_email_client import AttachmentFile
+import logging
 
 
-def attachments_template_dict(attachment_datasets):
+def attachments_template_dict(attachment_datasets, home_project_key):
     """
      :param attachments_datasets: List of attachment datasets (DSS datasets)
+     :param home_project_key: key of the project we are in
      :return dictionary of attachment dataset nams each to a dict containing keys `html_table` and `data`,
              where `data` is a list of records, each a dictionary of column names to values,
              and `html_table` is a string of html for the table with css class `dataframe`
@@ -13,8 +15,14 @@ def attachments_template_dict(attachment_datasets):
     attachments_dict = {}
     for attachment_ds in attachment_datasets:
         table_df = attachment_ds.get_dataframe().head(50)
+        ds_name = attachment_ds.full_name.split(".")[1]
+        if attachment_ds.project_key == home_project_key:
+            attachment_entry = attachments_dict.setdefault(ds_name, {})
+        else:
+            # For foreign datasets, we need another level in the map with the
+            ext_project_entry = attachments_dict.setdefault(attachment_ds.project_key, {})
+            attachment_entry = ext_project_entry.setdefault(ds_name, {})
 
-        attachment_entry = attachments_dict[attachment_ds.full_name.split('.')[1]] = {}
         attachment_entry["html_table"] = table_df.to_html(index=False, justify='left', border=0, na_rep="")
         attachment_entry["data"] = table_df.to_dict('records')
 
