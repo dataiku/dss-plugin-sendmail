@@ -62,6 +62,9 @@ class AbstractMessageClient(ABC):
     def send_email_impl(self,  sender, recipient, email_body, email_subject, attachment_files):
         pass
 
+    def quit(self):
+        pass
+
 
 class ChannelClient(AbstractMessageClient):
     """ Impl using DSS channels that requires DSS 12.6 or later """
@@ -87,9 +90,6 @@ class ChannelClient(AbstractMessageClient):
 
         sender_to_use = None if self.channel.sender else sender
         self.channel.send(self.project_id, [recipient], email_subject, email_body, attachments=files, plain_text=self.plain_text, sender=sender_to_use)
-
-    def quit(self):
-        pass
 
 
 class SmtpEmailClient(AbstractMessageClient):
