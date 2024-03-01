@@ -98,21 +98,21 @@
             "type": "COLUMN",
             "columnRole" : "contacts",
             "description" : "Sender of the email (from a column)",
-            "visibilityCondition" : "!model.use_sender_value && !model.mail_channel.endsWith('__|*_S')"
+            "visibilityCondition" : "!model.use_sender_value && !model.mail_channel.endsWith('__WITH_DEFINED_SENDER__')"
         },
         {
             "name": "sender_value",
             "label" : "Sender (value)",
             "type": "STRING",
             "description" : "Sender of the  email (provide value inline)",
-            "visibilityCondition" : "model.use_sender_value && !model.mail_channel.endsWith('__|*_S')"
+            "visibilityCondition" : "model.use_sender_value && !model.mail_channel.endsWith('__WITH_DEFINED_SENDER__')"
         },
         {
             "name": "use_sender_value",
             "label" : " ",
             "description" : "Use custom value",
             "type": "BOOLEAN",
-            "visibilityCondition" : "!model.mail_channel.endsWith('__|*_S')"
+            "visibilityCondition" : "!model.mail_channel.endsWith('__WITH_DEFINED_SENDER__')"
         },
         {
             "name": "subject_column",
