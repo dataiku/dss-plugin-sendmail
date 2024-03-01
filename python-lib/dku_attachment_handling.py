@@ -15,7 +15,7 @@ def attachments_template_dict(attachment_datasets):
         table_df = attachment_ds.get_dataframe().head(50)
 
         attachment_entry = attachments_dict[attachment_ds.full_name.split('.')[1]] = {}
-        attachment_entry["html_table"] = table_df.to_html(index=False, justify='left', border=0)
+        attachment_entry["html_table"] = table_df.to_html(index=False, justify='left', border=0, na_rep="")
         attachment_entry["data"] = table_df.to_dict('records')
 
     return attachments_dict
