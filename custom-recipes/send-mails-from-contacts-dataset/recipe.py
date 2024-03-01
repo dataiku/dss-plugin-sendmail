@@ -179,7 +179,7 @@ attachment_files = build_attachment_files(attachment_datasets, attachment_type)
 
 attachments_templating_dict = attachments_template_dict(attachment_datasets)
 
-if mail_channel is None or mail_channel == 'direct_smtp':
+if mail_channel is None or mail_channel == '__DKU__DIRECT_SMTP__':
     email_client = SmtpEmailClient(not use_html_body_value, read_smtp_config(config))
 else:
     email_client = ChannelClient(not use_html_body_value, to_real_channel_id(mail_channel))
