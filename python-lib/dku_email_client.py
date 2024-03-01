@@ -43,23 +43,8 @@ class AbstractMessageClient(ABC):
     def __init__(self, plain_text):
         self.plain_text = plain_text
 
-    def send_email(self, sender, recipient, email_subject, email_body, attachment_files):
-        """
-        :param sender: sender email, str - depending on impl, could be ignored if a sender configured for the channel
-        :param recipient: recipient email, str
-        :param email_subject: str
-        :param email_body: body of either plain text or html, str
-        :param attachment_files:attachments as list of AttachmentFile
-        """
-        # Any generic email body decoration goes here
-        email_body_to_send = email_body
-        if self.plain_text:
-            email_body_to_send = email_body + '\n\n'
-
-        self.send_email_impl(sender, recipient, email_subject, email_body_to_send, attachment_files)
-
     @abstractmethod
-    def send_email_impl(self,  sender, recipient, email_body, email_subject, attachment_files):
+    def send_email(self,  sender, recipient, email_body, email_subject, attachment_files):
         pass
 
     def quit(self):
@@ -78,7 +63,7 @@ class ChannelClient(AbstractMessageClient):
         logging.info(f"Configured channel messaging client with channel {channel_id} - type: {self.channel.type}, "
                      f"sender: {self.channel.sender}, plain_text? {self.plain_text}")
 
-    def send_email_impl(self, sender, recipient, email_subject, email_body, attachment_files):
+    def send_email(self, sender, recipient, email_subject, email_body, attachment_files):
         """
         :param sender: sender email, str - is ignored if a sender configured for the channel
         :param recipient: recipient email, str
@@ -110,7 +95,7 @@ class SmtpEmailClient(AbstractMessageClient):
         logging.info(f"Configured an STMP mail client with host: {smtp_config.smtp_host}, port: {smtp_config.smtp_port}, "
                      f"tls? {smtp_config.smtp_use_tls}, auth? {smtp_config.smtp_use_auth}, plain_text? {self.plain_text}")
 
-    def send_email_impl(self, sender, recipient, email_subject, email_body, attachment_files):
+    def send_email(self, sender, recipient, email_subject, email_body, attachment_files):
         msg = MIMEMultipart()
         msg["From"] = sender
         msg["To"] = recipient

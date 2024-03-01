@@ -78,7 +78,11 @@ def send_email_for_contact(mail_client, contact_dict, message_template, subject_
     else:
         email_text = contact_dict.get(body_column, "")
 
-    # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
+    if not use_html_body_value:
+        # To make sure there is a gap before attachments (TBH I'm not sure it is necessary or does much, just maintaining consistency with legacy behaviour)
+        email_text = email_text + '\n\n'
+
+        # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
     sender = sender_value if use_sender_value else contact_dict.get(sender_column, "")
     mail_client.send_email(sender, recipient, email_subject, email_text, attachment_files)
 
