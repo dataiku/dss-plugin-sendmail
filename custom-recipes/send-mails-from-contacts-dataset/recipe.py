@@ -190,7 +190,11 @@ with output.get_writer() as writer:
     fail = 0
     try:
         for contact in people.iter_rows():
-            logging.info("Sending to %s" % contact)
+            recipient = contact[recipient_column]
+            if recipient:
+                logging.info("Sending to %s" % contact[recipient_column])
+            else:
+                logging.info("No recipient for row - emailing will fail - row data: %s" % contact)
             contact_dict = dict(contact)
             try:
                 send_email_for_contact(email_client, contact_dict, body_template, subject_template)
