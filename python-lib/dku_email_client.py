@@ -56,9 +56,9 @@ class ChannelClient(AbstractMessageClient):
     def __init__(self, plain_text, channel_id):
         super().__init__(plain_text)
 
-        self.dss_client = dataiku.api_client()
+        dss_api_client = dataiku.api_client()
         self.project_id = dataiku.default_project_key()
-        self.channel = self.dss_client.get_messaging_channel(channel_id)
+        self.channel = dss_api_client.get_messaging_channel(channel_id)
 
         logging.info(f"Configured channel messaging client with channel {channel_id} - type: {self.channel.type}, "
                      f"sender: {self.channel.sender}, plain_text? {self.plain_text}")
