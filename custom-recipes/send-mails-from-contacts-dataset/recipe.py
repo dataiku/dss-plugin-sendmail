@@ -4,7 +4,7 @@ import logging
 from dku_email_client import SmtpConfig, SmtpEmailClient, ChannelClient
 from dss_selector_choices import SENDER_SUFFIX
 from dku_attachment_handling import build_attachment_files, attachments_template_dict
-from email_utils import get_email_subject, get_email_message_text
+from email_utils import build_email_subject, build_email_message_text
 from jinja2 import Environment, StrictUndefined
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -161,8 +161,8 @@ with output.get_writer() as writer:
                 logging.info("No recipient for row - emailing will fail - row data: %s" % contact)
             contact_dict = dict(contact)
             try:
-                email_subject = get_email_subject(use_subject_value, subject_template, subject_column, contact_dict)
-                email_body_text = get_email_message_text(use_body_value, body_template, attachments_templating_dict, contact_dict, body_column,
+                email_subject = build_email_subject(use_subject_value, subject_template, subject_column, contact_dict)
+                email_body_text = build_email_message_text(use_body_value, body_template, attachments_templating_dict, contact_dict, body_column,
                                                          use_html_body_value)
                 recipient = contact_dict[recipient_column]
                 # Note - if the channel has a sender configured, the sender value will be ignored by the email client here

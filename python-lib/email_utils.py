@@ -1,7 +1,7 @@
 import logging
 
 
-def get_email_subject(use_subject_value, subject_line_template, subject_column, contact_dict):
+def build_email_subject(use_subject_value, subject_line_template, subject_column, contact_dict):
     if use_subject_value:
         if subject_line_template:
             try:
@@ -15,7 +15,7 @@ def get_email_subject(use_subject_value, subject_line_template, subject_column, 
     return email_subject
 
 
-def get_email_message_text(use_body_value, message_template, attachments_templating_dict, contact_dict, body_column, use_html_body_value):
+def build_email_message_text(use_body_value, message_template, attachments_templating_dict, contact_dict, body_column, use_html_body_value):
     if use_body_value:
         if message_template:
             templating_value_dict = contact_dict.copy()
