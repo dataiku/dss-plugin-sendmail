@@ -45,9 +45,25 @@ class AbstractMessageClient(ABC):
 
     @abstractmethod
     def send_email(self,  sender, recipient, email_body, email_subject, attachment_files):
+        """
+        :param sender: sender email, str - is ignored if a sender configured for the channel
+        :param recipient: recipient email, str
+        :param email_subject: str
+        :param email_body: body of either plain text or html, str
+        :param attachment_files:attachments as list of  AttachmentFile
+        """
+        pass
+
+    def login(self):
+        """
+        Perform any login or other initialisation if needed
+        """
         pass
 
     def quit(self):
+        """
+        Perform any logout or resource cleanup if needed
+        """
         pass
 
 
@@ -64,13 +80,7 @@ class ChannelClient(AbstractMessageClient):
                      f"sender: {self.channel.sender}, plain_text? {self.plain_text}")
 
     def send_email(self, sender, recipient, email_subject, email_body, attachment_files):
-        """
-        :param sender: sender email, str - is ignored if a sender configured for the channel
-        :param recipient: recipient email, str
-        :param email_subject: str
-        :param email_body: body of either plain text or html, str
-        :param attachment_files:attachments as list of  AttachmentFile
-        """
+
         files = [(a.file_name, a.data, f"{a.mime_type}/{a.mime_subtype}") for a in attachment_files]
 
         sender_to_use = None if self.channel.sender else sender
@@ -86,14 +96,22 @@ class SmtpEmailClient(AbstractMessageClient):
     def __init__(self, plain_text, smtp_config):
         super().__init__(plain_text)
         self.smtp = smtplib.SMTP(smtp_config.smtp_host, port=smtp_config.smtp_port)
-        # Use TLS if set
-        if smtp_config.smtp_use_tls:
-            self.smtp.starttls()
-        # Use credentials if set
-        if smtp_config.smtp_use_auth:
-            self.smtp.login(str(smtp_config.smtp_user), str(smtp_config.smtp_pass))
+        self.smtp_config = smtp_config
+
         logging.info(f"Configured an STMP mail client with host: {smtp_config.smtp_host}, port: {smtp_config.smtp_port}, "
                      f"tls? {smtp_config.smtp_use_tls}, auth? {smtp_config.smtp_use_auth}, plain_text? {self.plain_text}")
+
+
+    def login(self):
+        # Use TLS if set
+        if self.smtp_config.smtp_use_tls:
+            self.smtp.starttls()
+            logging.info("SMTP TLS started")
+        # Use credentials if set
+        if self.smtp_config.smtp_use_auth:
+            self.smtp.login(str(self.smtp_config.smtp_user), str(self.smtp_config.smtp_pass))
+            logging.info(f"Authenticated against STMP mail client")
+
 
     def send_email(self, sender, recipient, email_subject, email_body, attachment_files):
         msg = MIMEMultipart()

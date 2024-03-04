@@ -198,6 +198,7 @@ if mail_channel is None or mail_channel == '__DKU__DIRECT_SMTP__':
     email_client = SmtpEmailClient(not use_html_body_value, read_smtp_config(config))
 else:
     email_client = ChannelClient(not use_html_body_value, to_real_channel_id(mail_channel))
+email_client.login()
 
 with output.get_writer() as writer:
     i = 0
