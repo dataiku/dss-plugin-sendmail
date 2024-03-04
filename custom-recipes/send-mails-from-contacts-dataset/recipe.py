@@ -4,6 +4,7 @@ import logging
 from dku_email_client import SmtpConfig, SmtpEmailClient, ChannelClient
 from dss_selector_choices import SENDER_SUFFIX
 from dku_attachment_handling import build_attachment_files, attachments_template_dict
+from email_utils import get_email_subject, get_email_message_text, send_email_for_contact
 from jinja2 import Environment, StrictUndefined
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -29,62 +30,9 @@ def to_real_channel_id(channel_id):
     else:
         return channel_id
 
-
 def does_channel_have_sender(channel_id):
     return channel_id is not None and channel_id.endswith(SENDER_SUFFIX)
 
-
-def send_email_for_contact(mail_client, contact_dict, message_template, subject_line_template):
-    """
-    Send an email with the relevant data for the contacts_row and given template
-    :param mail_client: SmtpEmailClient
-    :param contact_dict: dict
-    :param message_template: jinja Template|None - email template or None if this the message is provided in the row data
-    :param subject_line_template: jinja Template|None - subject line template or None if this the subject is provided in the row data
-    Sends the message or throws an exception
-    """
-
-    recipient = contact_dict[recipient_column]
-    # What is sent to templating is different from what we want to write iin the outputrg
-    templating_value_dict = contact_dict.copy()
-
-    if use_subject_value:
-        if subject_line_template:
-            # Render subject before we add attachments as these wouldn't make sense in the subject line
-            try:
-                email_subject = subject_line_template.render(templating_value_dict)
-            except Exception as exp:
-                raise Exception("Could not render subject template: {} ".format(exp))
-        else:
-            raise Exception("No template was generated to use for the subject")
-    else:
-        email_subject = contact_dict.get(subject_column, "")
-
-    if use_body_value:
-        if message_template:
-            if "attachments" in templating_value_dict:
-                # If there is column in the contacts dataset called "attachments" that takes priority, but we log a warning
-                logging.warning("The input (contacts) dataset contains a column called 'attachments'. "
-                             "If you want to display attachments data with the variable 'attachments' that column will have to be renamed")
-            else:
-                # Normal case - make attachments data available for JINJA
-                templating_value_dict["attachments"] = attachments_templating_dict
-            try:
-                email_text = message_template.render(templating_value_dict)
-            except Exception as exp:
-                raise Exception("Could not render body template: {} ".format(exp))
-        else:
-            raise Exception("No template was generated to use for the message")
-    else:
-        email_text = contact_dict.get(body_column, "")
-
-    if not use_html_body_value:
-        # To make sure there is a gap before attachments (TBH I'm not sure it is necessary or does much, just maintaining consistency with legacy behaviour)
-        email_text = email_text + '\n\n'
-
-        # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
-    sender = sender_value if use_sender_value else contact_dict.get(sender_column, "")
-    mail_client.send_email(sender, recipient, email_subject, email_text, attachment_files)
 
 # Get handles on datasets
 output_A_names = get_output_names_for_role('output')
@@ -213,7 +161,12 @@ with output.get_writer() as writer:
                 logging.info("No recipient for row - emailing will fail - row data: %s" % contact)
             contact_dict = dict(contact)
             try:
-                send_email_for_contact(email_client, contact_dict, body_template, subject_template)
+                email_subject = get_email_subject(use_subject_value, subject_template, subject_column, contact_dict)
+                email_body_text = get_email_message_text(use_body_value, body_template, attachments_templating_dict, contact_dict, body_column,
+                                                         use_html_body_value)
+                send_email_for_contact(email_client, contact_dict, recipient_column, use_sender_value, sender_value, sender_column,
+                                       email_subject, email_body_text, attachment_files)
+
                 contact_dict['sendmail_status'] = 'SUCCESS'
                 success += 1
                 if writer:
