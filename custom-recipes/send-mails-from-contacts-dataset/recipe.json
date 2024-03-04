@@ -4,7 +4,7 @@
         "description" : "Send personalised emails for every row in a Contacts dataset (mandatory), with data from Attachments datasets (optional) as CSV or Excel attachments, and use JINJA templating to show data in the email body. The output dataset shows the status of sent emails - please review it even if the job succeeds."
     },
     "kind" : "PYTHON",
-    "paramsPythonSetup": "dynamic_channels.py",
+    "paramsPythonSetup": "dynamic_form.py",
     "inputRoles" : [
         {
             "name": "contacts",
@@ -191,12 +191,16 @@
             "name": "attachment_type",
             "label" : "Attachments format",
             "type": "SELECT",
-            "defaultValue" : "csv",
-            "description" : "File format for attachments",
-            "selectChoices" : [
-                {"value":  "excel" , "label":"Excel"},
-                {"value":  "csv" , "label":"CSV"}
-            ]
+            "defaultValue" : null,
+            "getChoicesFromPython": true,
+            "description" : "File format for attachments"
+        },
+        {
+            "name": "apply_coloring_excel",
+            "label" : "Apply conditional formatting",
+            "description" : "Color cells by rules, when applicable",
+            "type": "BOOLEAN",
+            "visibilityCondition" : "model.attachment_type == 'excel_can_ac'"
         }
     ]
 }

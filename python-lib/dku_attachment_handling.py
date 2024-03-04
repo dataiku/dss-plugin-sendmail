@@ -4,7 +4,7 @@ import logging
 
 def attachments_template_dict(attachment_datasets, home_project_key):
     """
-     :param attachments_datasets: List of attachment datasets (DSS datasets)
+     :param attachment_datasets: List of attachment datasets (DSS datasets)
      :param home_project_key: key of the project we are in
      :return dictionary of attachment dataset nams each to a dict containing keys `html_table` and `data`,
              where `data` is a list of records, each a dictionary of column names to values,
@@ -29,24 +29,30 @@ def attachments_template_dict(attachment_datasets, home_project_key):
     return attachments_dict
 
 
-def build_attachment_files(attachment_datasets, attachment_type):
+def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_excel):
     """
         :param attachment_datasets: List of attachment datasets
-        :param attachment_type: str, e.g. "excel", "csv"
+        :param attachment_type: str, e.g. "excel", "csv" - "excel_can_ac" is treated as excel
+        :param apply_coloring_excel: boolean, whether to apply conditional formatting (aka coloring) for Excel attachments
         :return: Attachments as List of AttachmentFile
     """
+    logging.info(f"Building attachments, type: {attachment_type}, apply colouring? {apply_coloring_excel}")
+    is_excel = attachment_type == "excel" or attachment_type == "excel_can_ac"
 
-    if attachment_type == "excel":
+    format_params = None
+    if is_excel:
         request_fmt = "excel"
+        if apply_coloring_excel and attachment_type == "excel_can_ac":
+            format_params = {"applyColoring": True}
     else:
         request_fmt = "tsv-excel-header"
 
     # Prepare attachments
     attachment_files = []
     for attachment_ds in attachment_datasets:
-        with attachment_ds.raw_formatted_data(format=request_fmt) as stream:
+        with attachment_ds.raw_formatted_data(format=request_fmt, format_params=format_params) as stream:
             file_bytes = stream.read()
-        if attachment_type == "excel":
+        if is_excel:
             attachment_files.append(AttachmentFile(attachment_ds.full_name + ".xlsx", "application",
                                                      "vnd.openxmlformats-officedocument.spreadsheetml.sheet", file_bytes))
         else:
