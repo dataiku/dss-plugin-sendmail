@@ -86,9 +86,6 @@ def send_email_for_contact(mail_client, contact_dict, message_template, subject_
     sender = sender_value if use_sender_value else contact_dict.get(sender_column, "")
     mail_client.send_email(sender, recipient, email_subject, email_text, attachment_files)
 
-
-
-
 # Get handles on datasets
 output_A_names = get_output_names_for_role('output')
 output = dataiku.Dataset(output_A_names[0]) if len(output_A_names) > 0 else None
@@ -130,20 +127,31 @@ attachment_type = config.get('attachment_type', "csv")
 
 # Validation part 1 - Check some kind of value/column exists for body, subject, sender and recipient
 
-has_body_column = body_column and not use_body_value
-has_plain_body_value = use_body_value and body_value and not use_html_body_value
-has_html_body_value = use_body_value and use_html_body_value and html_body_value
-if not (has_body_column or has_plain_body_value or has_html_body_value):
+is_body_present = False
+if use_body_value:
+    if use_html_body_value:
+        is_body_present = bool(html_body_value)
+    else:
+        is_body_present = bool(body_value)
+else:
+    is_body_present = bool(body_column)
+if not is_body_present:
     raise AttributeError("No body column nor body value specified")
 
-has_subject_column = subject_column and not use_subject_value
-has_subject_value = use_subject_value and subject_value
-if not has_subject_column and not has_subject_value:
+is_subject_present = False
+if use_subject_value:
+    is_subject_present = bool(subject_value)
+else:
+    is_subject_present = bool(subject_column)
+if not is_subject_present:
     raise AttributeError("No value provided for the subject")
 
-has_sender_column = sender_column and not use_sender_value and not channel_has_sender
-has_sender_value = use_sender_value and sender_value and not channel_has_sender
-if not (channel_has_sender or has_sender_column or has_sender_value):
+is_sender_present = False
+if use_sender_value:
+    is_sender_present = bool(sender_value)
+else:
+    is_sender_present = bool(sender_column)
+if not (channel_has_sender or is_sender_present):
     raise AttributeError("No value provided for the sender")
 
 if not recipient_column:
