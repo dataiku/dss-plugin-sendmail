@@ -40,11 +40,3 @@ def get_email_message_text(use_body_value, message_template, attachments_templat
         email_text = email_text + '\n\n'
 
     return email_text
-
-
-def send_email_for_contact(mail_client, contact_dict, recipient_column, use_sender_value, sender_value, sender_column, email_subject, email_text,
-                           attachment_files):
-    recipient = contact_dict[recipient_column]
-    # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
-    sender = sender_value if use_sender_value else contact_dict.get(sender_column, "")
-    mail_client.send_email(sender, recipient, email_subject, email_text, attachment_files)

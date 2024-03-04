@@ -4,7 +4,7 @@ import logging
 from dku_email_client import SmtpConfig, SmtpEmailClient, ChannelClient
 from dss_selector_choices import SENDER_SUFFIX
 from dku_attachment_handling import build_attachment_files, attachments_template_dict
-from email_utils import get_email_subject, get_email_message_text, send_email_for_contact
+from email_utils import get_email_subject, get_email_message_text
 from jinja2 import Environment, StrictUndefined
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -164,8 +164,10 @@ with output.get_writer() as writer:
                 email_subject = get_email_subject(use_subject_value, subject_template, subject_column, contact_dict)
                 email_body_text = get_email_message_text(use_body_value, body_template, attachments_templating_dict, contact_dict, body_column,
                                                          use_html_body_value)
-                send_email_for_contact(email_client, contact_dict, recipient_column, use_sender_value, sender_value, sender_column,
-                                       email_subject, email_body_text, attachment_files)
+                recipient = contact_dict[recipient_column]
+                # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
+                sender = sender_value if use_sender_value else contact_dict.get(sender_column, "")
+                email_client.send_email(sender, recipient, email_subject, email_body_text, attachment_files)
 
                 contact_dict['sendmail_status'] = 'SUCCESS'
                 success += 1
