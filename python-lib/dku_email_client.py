@@ -1,46 +1,53 @@
 import dataiku
 import logging
 from abc import ABC, abstractmethod
-from collections import namedtuple
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 
+class SmtpConfig:
+    """
+    SMTP config for sending to an SMTP connection configured by the users
+    :param smtp_host: str, smtp host eg. sandbox.smtp.mailtrap.io
+    :param smtp_port: int, smtp port
+    :param smtp_use_tls: bool, whether to use tls
+    :param smtp_use_auth: bool, whether to have authentication and provide username and password
+    :param smtp_user: str, username of smtp server auth
+    :param smtp_pass: str, password for smtp server auth
+    """
+    def __init__(self, smtp_host, smtp_port, smtp_use_tls, smtp_use_auth, smtp_user, smtp_pass):
+        self.smtp_host = smtp_host
+        self.smtp_port = smtp_port
+        self.smtp_use_tls = smtp_use_tls
+        self.smtp_use_auth = smtp_use_auth
+        self.smtp_user = smtp_user
+        self.smtp_pass = smtp_pass
 
-def SmtpConfig():
-    # str, int, bool, bool, str, str
-    return namedtuple("SmtpConfig", "smtp_host, smtp_port, smtp_use_tls, smtp_use_auth, smtp_user, smtp_pass")
 
-
-def AttachmentFile():
-    """ Format for an attachment file with the info broken down nicely for both the client classes """
-    # str, str, str ('application' or 'text'), bytes
-    return namedtuple("AttachmentFile", "file_name, mime_type, mime_subtype, data")
+class AttachmentFile:
+    """
+    :param file_name: str, name of file including extension
+    :param mime_type: main maime type str before / ('application' or 'text')
+    :param mime_subtype: str -mime type bit after /, e.g. csv in text/csv
+    :param data: bytes, actual data of attachment
+    """
+    def __init__(self, file_name, mime_type, mime_subtype, data):
+        self.file_name = file_name
+        self.mime_type = mime_type
+        self.mime_subtype = mime_subtype
+        self.data = data
 
 
 class AbstractMessageClient(ABC):
     def __init__(self, plain_text):
         self.plain_text = plain_text
 
-
-    def send_email(self, sender, recipient, email_subject, email_body, attachment_files):
-        """
-        :param sender: sender email, str - depending on impl, could be ignored if a sender configured for the channel
-        :param recipient: recipient email, str
-        :param email_subject: str
-        :param email_body: body of either plain text or html, str
-        :param attachment_files:attachments as list of  AttachmentFile
-        """
-        # Any generic email body decoration goes here
-        email_body_to_send = email_body
-        if self.plain_text:
-            email_body_to_send = email_body + '\n\n'
-
-        self.send_email_impl(sender, recipient, email_subject, email_body_to_send, attachment_files)
-
     @abstractmethod
-    def send_email_impl(self,  sender, recipient, email_body, email_subject, attachment_files):
+    def send_email(self,  sender, recipient, email_body, email_subject, attachment_files):
+        pass
+
+    def quit(self):
         pass
 
 
@@ -49,14 +56,14 @@ class ChannelClient(AbstractMessageClient):
     def __init__(self, plain_text, channel_id):
         super().__init__(plain_text)
 
-        self.dss_client = dataiku.api_client()
+        dss_api_client = dataiku.api_client()
         self.project_id = dataiku.default_project_key()
-        self.channel = self.dss_client.get_messaging_channel(channel_id)
+        self.channel = dss_api_client.get_messaging_channel(channel_id)
 
         logging.info(f"Configured channel messaging client with channel {channel_id} - type: {self.channel.type}, "
                      f"sender: {self.channel.sender}, plain_text? {self.plain_text}")
 
-    def send_email_impl(self, sender, recipient, email_subject, email_body, attachment_files):
+    def send_email(self, sender, recipient, email_subject, email_body, attachment_files):
         """
         :param sender: sender email, str - is ignored if a sender configured for the channel
         :param recipient: recipient email, str
@@ -69,12 +76,12 @@ class ChannelClient(AbstractMessageClient):
         sender_to_use = None if self.channel.sender else sender
         self.channel.send(self.project_id, [recipient], email_subject, email_body, attachments=files, plain_text=self.plain_text, sender=sender_to_use)
 
-    def quit(self):
-        pass
-
 
 class SmtpEmailClient(AbstractMessageClient):
-    """ Client for sending email - direct SMTP implementation """
+    """ Client for sending email - direct SMTP implementation
+    :param plain_text: bool, wther the email client will interpret and send the emails body as plain text
+    :param smtp_config: SmtpConfig, stmp config to use
+    """
 
     def __init__(self, plain_text, smtp_config):
         super().__init__(plain_text)
@@ -88,7 +95,7 @@ class SmtpEmailClient(AbstractMessageClient):
         logging.info(f"Configured an STMP mail client with host: {smtp_config.smtp_host}, port: {smtp_config.smtp_port}, "
                      f"tls? {smtp_config.smtp_use_tls}, auth? {smtp_config.smtp_use_auth}, plain_text? {self.plain_text}")
 
-    def send_email_impl(self, sender, recipient, email_subject, email_body, attachment_files):
+    def send_email(self, sender, recipient, email_subject, email_body, attachment_files):
         msg = MIMEMultipart()
         msg["From"] = sender
         msg["To"] = recipient

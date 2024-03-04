@@ -6,8 +6,9 @@ from dss_selector_choices import SENDER_SUFFIX
 from dku_attachment_handling import build_attachment_files, attachments_template_dict
 from jinja2 import Environment, StrictUndefined
 
-jinja_env = Environment(undefined=StrictUndefined)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
+jinja_env = Environment(undefined=StrictUndefined)
 
 def read_smtp_config(recipe_config):
     """ Extract SmtpConfig (named tuple) from recipe_config dict """
@@ -18,7 +19,7 @@ def read_smtp_config(recipe_config):
     smtp_use_auth = recipe_config.get('smtp_use_auth', False)
     smtp_user = recipe_config.get('smtp_user', None)
     smtp_pass = recipe_config.get('smtp_pass', None)
-    return SmtpConfig()(smtp_host, smtp_port, smtp_use_tls, smtp_use_auth, smtp_user, smtp_pass)
+    return SmtpConfig(smtp_host, smtp_port, smtp_use_tls, smtp_use_auth, smtp_user, smtp_pass)
 
 
 def to_real_channel_id(channel_id):
@@ -33,18 +34,19 @@ def does_channel_have_sender(channel_id):
     return channel_id is not None and channel_id.endswith(SENDER_SUFFIX)
 
 
-def send_email_for_contact(mail_client, contacts_row, message_template, subject_line_template):
+def send_email_for_contact(mail_client, contact_dict, message_template, subject_line_template):
     """
     Send an email with the relevant data for the contacts_row and given template
     :param mail_client: SmtpEmailClient
-    :param contacts_row: dict
+    :param contact_dict: dict
     :param message_template: jinja Template|None - email template or None if this the message is provided in the row data
     :param subject_line_template: jinja Template|None - subject line template or None if this the subject is provided in the row data
     Sends the message or throws an exception
     """
 
-    recipient = contacts_row[recipient_column]
-    templating_value_dict = dict(contacts_row)
+    recipient = contact_dict[recipient_column]
+    # What is sent to templating is different from what we want to write iin the outputrg
+    templating_value_dict = contact_dict.copy()
 
     if use_subject_value:
         if subject_line_template:
@@ -56,7 +58,7 @@ def send_email_for_contact(mail_client, contacts_row, message_template, subject_
         else:
             raise Exception("No template was generated to use for the subject")
     else:
-        email_subject = contacts_row.get(subject_column, "")
+        email_subject = contact_dict.get(subject_column, "")
 
     if use_body_value:
         if message_template:
@@ -74,18 +76,23 @@ def send_email_for_contact(mail_client, contacts_row, message_template, subject_
         else:
             raise Exception("No template was generated to use for the message")
     else:
-        email_text = contacts_row.get(body_column, "")
+        email_text = contact_dict.get(body_column, "")
 
-    # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
-    sender = sender_value if use_sender_value else contacts_row.get(sender_column, "")
+    if not use_html_body_value:
+        # To make sure there is a gap before attachments (TBH I'm not sure it is necessary or does much, just maintaining consistency with legacy behaviour)
+        email_text = email_text + '\n\n'
+
+        # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
+    sender = sender_value if use_sender_value else contact_dict.get(sender_column, "")
     mail_client.send_email(sender, recipient, email_subject, email_text, attachment_files)
 
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+
 
 # Get handles on datasets
 output_A_names = get_output_names_for_role('output')
 output = dataiku.Dataset(output_A_names[0]) if len(output_A_names) > 0 else None
+project_key = output.project_key
 
 people = dataiku.Dataset(get_input_names_for_role('contacts')[0])
 attachment_datasets = [dataiku.Dataset(x) for x in get_input_names_for_role('attachments')]
@@ -160,7 +167,7 @@ if recipient_column not in people_columns:
 
 body_template = None
 if use_body_value:
-    if use_html_body_value:
+    if body_format == 'html':
         body_template = jinja_env.from_string(html_body_value)
     else:
         body_template = jinja_env.from_string(body_value)
@@ -177,9 +184,9 @@ output.write_schema(output_schema)
 
 attachment_files = build_attachment_files(attachment_datasets, attachment_type, apply_coloring_excel)
 
-attachments_templating_dict = attachments_template_dict(attachment_datasets)
+attachments_templating_dict = attachments_template_dict(attachment_datasets, project_key)
 
-if mail_channel is None or mail_channel == 'direct_smtp':
+if mail_channel is None or mail_channel == '__DKU__DIRECT_SMTP__':
     email_client = SmtpEmailClient(not use_html_body_value, read_smtp_config(config))
 else:
     email_client = ChannelClient(not use_html_body_value, to_real_channel_id(mail_channel))
@@ -190,22 +197,25 @@ with output.get_writer() as writer:
     fail = 0
     try:
         for contact in people.iter_rows():
-            logging.info("Sending to %s" % contact)
+            recipient = contact[recipient_column]
+            if recipient:
+                logging.info("Sending to %s" % contact[recipient_column])
+            else:
+                logging.info("No recipient for row - emailing will fail - row data: %s" % contact)
+            contact_dict = dict(contact)
             try:
-                send_email_for_contact(email_client, contact, body_template, subject_template)
-                d = dict(contact)
-                d['sendmail_status'] = 'SUCCESS'
+                send_email_for_contact(email_client, contact_dict, body_template, subject_template)
+                contact_dict['sendmail_status'] = 'SUCCESS'
                 success += 1
                 if writer:
-                    writer.write_row_dict(d)
+                    writer.write_row_dict(contact_dict)
             except Exception as e:
                 logging.exception("Send failed")
                 fail += 1
-                d = dict(contact)
-                d['sendmail_status'] = 'FAILED'
-                d['sendmail_error'] = str(e)
+                contact_dict['sendmail_status'] = 'FAILED'
+                contact_dict['sendmail_error'] = str(e)
                 if writer:
-                    writer.write_row_dict(d)
+                    writer.write_row_dict(contact_dict)
             i += 1
             if i % 5 == 0:
                 logging.info("Sent %d mails (%d success %d fail)" % (i, success, fail))

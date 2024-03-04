@@ -49,7 +49,7 @@
             "label" : "SMTP Host",
             "defaultValue" : "localhost",
             "type": "STRING",
-            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == '__DKU__DIRECT_SMTP__'"
         },
         {
             "name": "smtp_port",
@@ -57,31 +57,31 @@
             "defaultValue" : 25,
             "type": "INT",
             "mandatory" : true,
-            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == '__DKU__DIRECT_SMTP__'"
         },
         {
             "name": "smtp_use_tls",
             "label" : "Use TLS",
             "type": "BOOLEAN",
-            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == '__DKU__DIRECT_SMTP__'"
         },
         {
             "name": "smtp_use_auth",
             "label" : "Use authentication",
             "type": "BOOLEAN",
-            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == 'direct_smtp'"
+            "visibilityCondition" : "model.mail_channel == null || model.mail_channel == '__DKU__DIRECT_SMTP__'"
         },
         {
             "name": "smtp_user",
             "label" : "SMTP Username",
             "type": "STRING",
-            "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == 'direct_smtp') && model.smtp_use_auth"
+            "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == '__DKU__DIRECT_SMTP__') && model.smtp_use_auth"
         },
         {
             "name": "smtp_pass",
             "label" : "SMTP Password",
             "type": "PASSWORD",
-            "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == 'direct_smtp') && model.smtp_use_auth"
+            "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == '__DKU__DIRECT_SMTP__') && model.smtp_use_auth"
         },
 
         {
@@ -98,21 +98,21 @@
             "type": "COLUMN",
             "columnRole" : "contacts",
             "description" : "Sender of the email (from a column)",
-            "visibilityCondition" : "!model.use_sender_value && !model.mail_channel.endsWith('__|*_S')"
+            "visibilityCondition" : "!model.use_sender_value && !model.mail_channel.endsWith('__WITH_DEFINED_SENDER__')"
         },
         {
             "name": "sender_value",
             "label" : "Sender (value)",
             "type": "STRING",
             "description" : "Sender of the  email (provide value inline)",
-            "visibilityCondition" : "model.use_sender_value && !model.mail_channel.endsWith('__|*_S')"
+            "visibilityCondition" : "model.use_sender_value && !model.mail_channel.endsWith('__WITH_DEFINED_SENDER__')"
         },
         {
             "name": "use_sender_value",
             "label" : " ",
             "description" : "Use custom value",
             "type": "BOOLEAN",
-            "visibilityCondition" : "!model.mail_channel.endsWith('__|*_S')"
+            "visibilityCondition" : "!model.mail_channel.endsWith('__WITH_DEFINED_SENDER__')"
         },
         {
             "name": "subject_column",

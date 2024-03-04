@@ -26,8 +26,8 @@ def do(payload, config, plugin_config, inputs):
 
         # Add an entry for direct SMTP
         if len(channels) > 0:
-            # If there is a choice of channels, giving direct SMTP a key of "direct_smtp" means it is there but not as default
-            choices.append("Manually define SMTP", "direct_smtp")
+            # If there is a choice of channels, giving direct SMTP a key of "__DKU__DIRECT_SMTP__" means it is there but not as default
+            choices.append("Manually define SMTP", "__DKU__DIRECT_SMTP__")
         else:
             # If there is no choice, put SMTP there but with a key of None, so it will be the default instead of "Nothing selected"
             choices.append("Manually define SMTP", None)

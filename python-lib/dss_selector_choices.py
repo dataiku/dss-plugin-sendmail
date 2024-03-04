@@ -1,4 +1,4 @@
-SENDER_SUFFIX = "__|*_S"
+SENDER_SUFFIX = "__WITH_DEFINED_SENDER__"
 
 class DSSSelectorChoices(object):
     def __init__(self):
