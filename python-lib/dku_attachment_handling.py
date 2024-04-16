@@ -14,7 +14,7 @@ def attachments_template_dict(attachment_datasets, home_project_key):
 
     attachments_dict = {}
     for attachment_ds in attachment_datasets:
-        table_df = attachment_ds.get_dataframe().head(50)
+        table_df = attachment_ds.get_dataframe(limit=50)
         ds_name = attachment_ds.full_name.split(".")[1]
         if attachment_ds.project_key == home_project_key:
             attachment_entry = attachments_dict.setdefault(ds_name, {})
@@ -23,7 +23,11 @@ def attachments_template_dict(attachment_datasets, home_project_key):
             ext_project_entry = attachments_dict.setdefault(attachment_ds.project_key, {})
             attachment_entry = ext_project_entry.setdefault(ds_name, {})
 
-        attachment_entry["html_table"] = table_df.to_html(index=False, justify='left', border=0, na_rep="")
+        # Use DSS to_html method if available (DSS 12.6.2+)
+        if hasattr(attachment_ds.__class__, "to_html") and callable(getattr(attachment_ds.__class__, "to_html")):
+            attachment_entry["html_table"] = attachment_ds.to_html(limit=50, border=0, null_string="")
+        else:
+            attachment_entry["html_table"] = table_df.to_html(index=False, justify='left', border=0, na_rep="")
         attachment_entry["data"] = table_df.to_dict('records')
 
     return attachments_dict
