@@ -199,9 +199,9 @@
         {
             "name": "apply_coloring_excel",
             "label" : "Apply conditional formatting",
-            "description" : "Color cells by rules, when applicable",
+            "description" : "Color cells by rules, when applicable in the HTML body. Will also be applied when attachment format is Excel.",
             "type": "BOOLEAN",
-            "visibilityCondition" : "model.attachment_type == 'excel_can_ac'"
+            "visibilityCondition" : "(model.body_format == 'html') || (model.attachment_type == 'excel_can_ac')"
         }
     ]
 }
