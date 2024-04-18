@@ -37,10 +37,14 @@ def attachments_template_dict(attachment_datasets, home_project_key, apply_color
 def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_excel):
     """
         :param attachment_datasets: List of attachment datasets
-        :param attachment_type: str, e.g. "excel", "csv" - "excel_can_ac" is treated as excel
+        :param attachment_type: str, e.g. "excel", "csv" - "excel_can_ac" is treated as excel, "send_no_attachments" means none
         :param apply_coloring_excel: boolean, whether to apply conditional formatting (aka coloring) for Excel attachments
         :return: Attachments as List of AttachmentFile
     """
+
+    if "send_no_attachments" == attachment_type:
+        return []
+
     logging.info(f"Building attachments, type: {attachment_type}, apply colouring? {apply_coloring_excel}")
     is_excel = attachment_type == "excel" or attachment_type == "excel_can_ac"
 

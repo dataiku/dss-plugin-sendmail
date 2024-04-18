@@ -2,6 +2,9 @@
 
 ## [Version 1.0.1](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.1) - Feature release - 2024-04
 
+- Recipe configurations saved in version 1.0.0 with "Attachments format" set to "Nothing selected" will no longer send CSV attachments.
+  If you send CSV attachments in your integrations, please check existing recipes before upgrading to ensure they explicitly use the CSV option.
+
 - Features added
   - Generate HTML tables where colors from conditional formatting are applied for inline datasets
 

@@ -72,7 +72,7 @@ html_body_value = config.get('html_body_value', None)
 mail_channel = config.get('mail_channel', None)
 channel_has_sender = does_channel_have_sender(mail_channel)
 
-attachment_type = config.get('attachment_type', "csv")
+attachment_type = config.get('attachment_type', "send_no_attachments")
 
 # Validation part 1 - Check some kind of value/column exists for body, subject, sender and recipient
 
