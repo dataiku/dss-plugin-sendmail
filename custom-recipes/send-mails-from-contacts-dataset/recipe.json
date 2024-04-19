@@ -218,7 +218,7 @@
         {
             "name": "apply_coloring_excel",
             "label" : "Apply conditional formatting",
-            "description" : "Color cells by rules, when applicable in the HTML body or attachment format is Excel. Full support in DSS 12.6.2 and above.",
+            "description" : "Color cells by rules, when applicable in the HTML body and Excel attachments. Full support in DSS 12.6.2 and above.",
             "defaultValue" : true,
             "type": "BOOLEAN",
             "visibilityCondition" : "(model.body_format == 'html') || (model.attachment_type == 'excel')"
