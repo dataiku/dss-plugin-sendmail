@@ -1,4 +1,5 @@
 from dku_email_client import AttachmentFile
+from dku_support_detection import supports_dataset_to_html
 import logging
 
 
@@ -25,7 +26,7 @@ def attachments_template_dict(attachment_datasets, home_project_key, apply_color
             attachment_entry = ext_project_entry.setdefault(ds_name, {})
 
         # Use DSS to_html method if available (DSS 12.6.2+)
-        if hasattr(attachment_ds.__class__, "to_html") and callable(getattr(attachment_ds.__class__, "to_html")):
+        if supports_dataset_to_html(attachment_ds):
             attachment_entry["html_table"] = attachment_ds.to_html(limit=50, border=0, null_string="", apply_conditional_formatting=apply_coloring)
         else:
             attachment_entry["html_table"] = table_df.to_html(index=False, justify='left', border=0, na_rep="")
