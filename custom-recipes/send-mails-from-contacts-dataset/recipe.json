@@ -199,8 +199,12 @@
             "name": "attachment_type",
             "label" : "Attachments format",
             "type": "SELECT",
+            "selectChoices" : [
+                {"value": "send_no_attachments", "label": "Do not send attachments"},
+                {"value": "excel", "label": "Excel"},
+                {"value": "csv", "label": "CSV"}
+            ],
             "defaultValue" : "send_no_attachments",
-            "getChoicesFromPython": true,
             "description" : "File format for attachments"
         },
 
@@ -208,16 +212,16 @@
             "name": "sep_cond_format",
             "label": "Conditional formatting",
             "type": "SEPARATOR",
-            "visibilityCondition" : "(model.body_format == 'html') || (model.attachment_type == 'excel_can_ac')"
+            "visibilityCondition" : "(model.body_format == 'html') || (model.attachment_type == 'excel')"
         },
 
         {
             "name": "apply_coloring_excel",
             "label" : "Apply conditional formatting",
-            "description" : "Color cells by rules, when applicable in the HTML body. Will also be applied when attachment format is Excel.",
+            "description" : "Color cells by rules, when applicable in the HTML body or attachment format is Excel. Full support in DSS 12.6.2 and above.",
             "defaultValue" : true,
             "type": "BOOLEAN",
-            "visibilityCondition" : "(model.body_format == 'html') || (model.attachment_type == 'excel_can_ac')"
+            "visibilityCondition" : "(model.body_format == 'html') || (model.attachment_type == 'excel')"
         }
     ]
 }
