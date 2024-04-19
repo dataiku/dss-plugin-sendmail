@@ -35,6 +35,7 @@ def do(payload, config, plugin_config, inputs):
 
     if parameter_name == "attachment_type":
         choices = DSSSelectorChoices()
+        choices.append("Do not send attachments", "send_no_attachments")
         if supports_messaging_channels_and_conditional_formatting(dss_client):
             # Added excel and give it the key excel_can_ac to indicate to the UI that we can show the
             # apply coloring ("apply conditional formatting") option

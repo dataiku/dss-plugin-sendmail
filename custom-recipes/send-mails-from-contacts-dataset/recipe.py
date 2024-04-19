@@ -60,6 +60,7 @@ use_body_value = config.get('use_body_value', False)
 body_column = config.get('body_column', None)
 body_value = config.get('body_value', None)
 
+# Also applies to HTML as of 12.6.2
 apply_coloring_excel = config.get('apply_coloring_excel', False)
 
 # For legacy configs, assume it is text if not defined
@@ -71,7 +72,7 @@ html_body_value = config.get('html_body_value', None)
 mail_channel = config.get('mail_channel', None)
 channel_has_sender = does_channel_have_sender(mail_channel)
 
-attachment_type = config.get('attachment_type', "csv")
+attachment_type = config.get('attachment_type', "send_no_attachments")
 
 # Validation part 1 - Check some kind of value/column exists for body, subject, sender and recipient
 
@@ -140,7 +141,7 @@ output.write_schema(output_schema)
 
 attachment_files = build_attachment_files(attachment_datasets, attachment_type, apply_coloring_excel)
 
-attachments_templating_dict = attachments_template_dict(attachment_datasets, project_key)
+attachments_templating_dict = attachments_template_dict(attachment_datasets, project_key, apply_coloring_excel)
 
 if mail_channel is None or mail_channel == '__DKU__DIRECT_SMTP__':
     email_client = SmtpEmailClient(not use_html_body_value, read_smtp_config(config))

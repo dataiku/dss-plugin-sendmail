@@ -1,11 +1,13 @@
 from dku_email_client import AttachmentFile
+from dku_support_detection import supports_dataset_to_html
 import logging
 
 
-def attachments_template_dict(attachment_datasets, home_project_key):
+def attachments_template_dict(attachment_datasets, home_project_key, apply_coloring):
     """
      :param attachment_datasets: List of attachment datasets (DSS datasets)
      :param home_project_key: key of the project we are in
+     :param apply_coloring: whether to apply colouring configured in explore view to the HTML tables
      :return dictionary of attachment dataset nams each to a dict containing keys `html_table` and `data`,
              where `data` is a list of records, each a dictionary of column names to values,
              and `html_table` is a string of html for the table with css class `dataframe`
@@ -14,16 +16,20 @@ def attachments_template_dict(attachment_datasets, home_project_key):
 
     attachments_dict = {}
     for attachment_ds in attachment_datasets:
-        table_df = attachment_ds.get_dataframe().head(50)
+        table_df = attachment_ds.get_dataframe(limit=50)
         ds_name = attachment_ds.full_name.split(".")[1]
         if attachment_ds.project_key == home_project_key:
             attachment_entry = attachments_dict.setdefault(ds_name, {})
         else:
-            # For foreign datasets, we need another level in the map with the
+            # For foreign datasets, we need another level in the map with the project key
             ext_project_entry = attachments_dict.setdefault(attachment_ds.project_key, {})
             attachment_entry = ext_project_entry.setdefault(ds_name, {})
 
-        attachment_entry["html_table"] = table_df.to_html(index=False, justify='left', border=0, na_rep="")
+        # Use DSS to_html method if available (DSS 12.6.2+)
+        if supports_dataset_to_html(attachment_ds):
+            attachment_entry["html_table"] = attachment_ds.to_html(limit=50, border=0, null_string="", apply_conditional_formatting=apply_coloring)
+        else:
+            attachment_entry["html_table"] = table_df.to_html(index=False, justify='left', border=0, na_rep="")
         attachment_entry["data"] = table_df.to_dict('records')
 
     return attachments_dict
@@ -32,10 +38,14 @@ def attachments_template_dict(attachment_datasets, home_project_key):
 def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_excel):
     """
         :param attachment_datasets: List of attachment datasets
-        :param attachment_type: str, e.g. "excel", "csv" - "excel_can_ac" is treated as excel
+        :param attachment_type: str, e.g. "excel", "csv" - "excel_can_ac" is treated as excel, "send_no_attachments" means none
         :param apply_coloring_excel: boolean, whether to apply conditional formatting (aka coloring) for Excel attachments
         :return: Attachments as List of AttachmentFile
     """
+
+    if "send_no_attachments" == attachment_type:
+        return []
+
     logging.info(f"Building attachments, type: {attachment_type}, apply colouring? {apply_coloring_excel}")
     is_excel = attachment_type == "excel" or attachment_type == "excel_can_ac"
 
