@@ -207,7 +207,7 @@
         {
             "name": "encryption_password_excel",
             "label" : "Encryption password",
-            "type": "STRING",
+            "type": "PASSWORD",
             "description" : "(Optional) Password to encrypt excel files, requires DSS 13.0 or above",
             "visibilityCondition" : "model.attachment_type == 'excel_can_ac'"
         },
