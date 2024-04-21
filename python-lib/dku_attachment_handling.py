@@ -35,7 +35,7 @@ def attachments_template_dict(attachment_datasets, home_project_key, apply_color
     return attachments_dict
 
 
-def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_excel):
+def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_excel, encryption_password_excel):
     """
         :param attachment_datasets: List of attachment datasets
         :param attachment_type: str, e.g. "excel", "csv" - "excel_can_ac" is treated as excel, "send_no_attachments" means none
@@ -54,6 +54,10 @@ def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_
         request_fmt = "excel"
         if apply_coloring_excel and attachment_type == "excel_can_ac":
             format_params = {"applyColoring": True}
+        if encryption_password_excel:
+            if format_params is None:
+                format_params = {}
+            format_params["password"] = encryption_password_excel
     else:
         request_fmt = "tsv-excel-header"
 

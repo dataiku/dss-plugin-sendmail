@@ -1,5 +1,10 @@
 # Changelog
 
+## [Version 1.0.2](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.2) - Feature release - 2024-05
+
+- Features added
+  - Ability to specify a password to encrypt Excel files
+
 ## [Version 1.0.1](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.1) - Feature release - 2024-04
 
 - Recipe configurations saved in version 1.0.0 with "Attachments format" set to "Nothing selected" will no longer send CSV attachments.
