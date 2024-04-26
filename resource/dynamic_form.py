@@ -1,11 +1,6 @@
 from dss_selector_choices import DSSSelectorChoices, SENDER_SUFFIX
+from dku_support_detection import supports_messaging_channels_and_conditional_formatting
 import dataiku
-
-
-def supports_messaging_channels_and_conditional_formatting(dss_client):
-    # Check for existence of messaging channel API we added in 12.6
-    # If this is here we also support conditional formatting, as this was done in the same version
-    return callable(getattr(dss_client, "list_messaging_channels", None))
 
 
 def do(payload, config, plugin_config, inputs):
@@ -31,16 +26,4 @@ def do(payload, config, plugin_config, inputs):
         else:
             # If there is no choice, put SMTP there but with a key of None, so it will be the default instead of "Nothing selected"
             choices.append("Manually define SMTP", None)
-        return choices.to_dss()
-
-    if parameter_name == "attachment_type":
-        choices = DSSSelectorChoices()
-        choices.append("Do not send attachments", "send_no_attachments")
-        if supports_messaging_channels_and_conditional_formatting(dss_client):
-            # Added excel and give it the key excel_can_ac to indicate to the UI that we can show the
-            # apply coloring ("apply conditional formatting") option
-            choices.append("Excel", "excel_can_ac")
-        else:
-            choices.append("Excel", "excel")
-        choices.append("CSV", "csv")
         return choices.to_dss()

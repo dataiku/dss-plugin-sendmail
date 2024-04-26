@@ -1,6 +1,7 @@
 from dku_email_client import AttachmentFile
-from dku_support_detection import supports_dataset_to_html
+from dku_support_detection import supports_dataset_to_html, supports_messaging_channels_and_conditional_formatting
 import logging
+import dataiku
 
 
 def attachments_template_dict(attachment_datasets, home_project_key, apply_coloring):
@@ -47,12 +48,15 @@ def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_
         return []
 
     logging.info(f"Building attachments, type: {attachment_type}, apply colouring? {apply_coloring_excel}")
+
+    # "excel_can_ac" was used to indicate excel in version 1.0.0 of the plugin - but it caused migration problems, so we got rid of it (see SC 80121)
+    # Still, if the config has "excel_can_ac" and is run from the flow, we want to treat as excel (it means the user saved in v1.0.0 and did not reopen it)
     is_excel = attachment_type == "excel" or attachment_type == "excel_can_ac"
 
     format_params = None
     if is_excel:
         request_fmt = "excel"
-        if apply_coloring_excel and attachment_type == "excel_can_ac":
+        if apply_coloring_excel and supports_messaging_channels_and_conditional_formatting(dataiku.api_client()):
             format_params = {"applyColoring": True}
     else:
         request_fmt = "tsv-excel-header"
