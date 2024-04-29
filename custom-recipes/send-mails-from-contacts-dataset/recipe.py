@@ -73,6 +73,7 @@ mail_channel = config.get('mail_channel', None)
 channel_has_sender = does_channel_have_sender(mail_channel)
 
 attachment_type = config.get('attachment_type', "send_no_attachments")
+encryption_password_excel = config.get('encryption_password_excel', None)
 
 # Validation part 1 - Check some kind of value/column exists for body, subject, sender and recipient
 
@@ -139,7 +140,7 @@ output_schema.append({'name': 'sendmail_status', 'type': 'string'})
 output_schema.append({'name': 'sendmail_error', 'type': 'string'})
 output.write_schema(output_schema)
 
-attachment_files = build_attachment_files(attachment_datasets, attachment_type, apply_coloring_excel)
+attachment_files = build_attachment_files(attachment_datasets, attachment_type, apply_coloring_excel, encryption_password_excel)
 
 attachments_templating_dict = attachments_template_dict(attachment_datasets, project_key, apply_coloring_excel)
 
