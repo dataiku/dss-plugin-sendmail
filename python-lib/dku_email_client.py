@@ -44,10 +44,10 @@ class AbstractMessageClient(ABC):
         self.plain_text = plain_text
 
     @abstractmethod
-    def send_email(self,  sender, recipient, email_body, email_subject, attachment_files):
+    def send_email(self,  sender, recipiens, email_body, email_subject, attachment_files):
         """
         :param sender: sender email, str - is ignored if a sender configured for the channel
-        :param recipient: recipient email, str
+        :param recipients: recipients email, Seq
         :param email_subject: str
         :param email_body: body of either plain text or html, str
         :param attachment_files:attachments as list of  AttachmentFile
@@ -79,12 +79,12 @@ class ChannelClient(AbstractMessageClient):
         logging.info(f"Configured channel messaging client with channel {channel_id} - type: {self.channel.type}, "
                      f"sender: {self.channel.sender}, plain_text? {self.plain_text}")
 
-    def send_email(self, sender, recipient, email_subject, email_body, attachment_files):
+    def send_email(self, sender, recipients, email_subject, email_body, attachment_files):
 
         files = [(a.file_name, a.data, f"{a.mime_type}/{a.mime_subtype}") for a in attachment_files]
 
         sender_to_use = None if self.channel.sender else sender
-        self.channel.send(self.project_id, [recipient], email_subject, email_body, attachments=files, plain_text=self.plain_text, sender=sender_to_use)
+        self.channel.send(self.project_id, recipients, email_subject, email_body, attachments=files, plain_text=self.plain_text, sender=sender_to_use)
 
 
 class SmtpEmailClient(AbstractMessageClient):
@@ -113,10 +113,10 @@ class SmtpEmailClient(AbstractMessageClient):
             logging.info(f"Authenticated against STMP mail client")
 
 
-    def send_email(self, sender, recipient, email_subject, email_body, attachment_files):
+    def send_email(self, sender, recipients, email_subject, email_body, attachment_files):
         msg = MIMEMultipart()
         msg["From"] = sender
-        msg["To"] = recipient
+        msg["To"] = ", ".join(recipients)
         msg["Subject"] = email_subject
         body_encoding = "utf-8"
         text_type = 'plain' if self.plain_text else 'html'
@@ -130,7 +130,7 @@ class SmtpEmailClient(AbstractMessageClient):
                 raise Exception(f'Cannot handle mime type {attachment_file.mime_type}')
             mime_app.add_header("Content-Disposition", 'attachment', filename=attachment_file.file_name)
             msg.attach(mime_app)
-        self.smtp.sendmail(sender, [recipient], msg.as_string())
+        self.smtp.sendmail(sender, recipients, msg.as_string())
 
     def quit(self):
         """ Do any disconnection needed"""
