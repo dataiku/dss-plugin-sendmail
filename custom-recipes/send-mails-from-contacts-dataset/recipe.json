@@ -34,7 +34,6 @@
             "label": "Mail Settings",
             "type": "SEPARATOR"
         },
-
         {
             "name": "mail_channel",
             "label" : "Channel",
@@ -203,13 +202,13 @@
             "getChoicesFromPython": true,
             "description" : "File format for attachments"
         },
-
         {
-            "name": "encryption_password_excel",
-            "label" : "Encryption password",
-            "type": "PASSWORD",
-            "description" : "(Optional) Password to encrypt excel files, requires DSS 13.0 or above",
-            "visibilityCondition" : "model.attachment_type == 'excel_can_ac'"
+            "name": "encryption_password_excel_params",
+            "label": "Encryption password",
+            "type": "PRESET",
+            "parameterSetId": "file-encryption",
+            "description" : "(Optional) Password to encrypt excel files, requires DSS 13.0 or above.",
+             "visibilityCondition" : "model.attachment_type == 'excel_can_ac'"
         },
 
         {

@@ -73,7 +73,10 @@ mail_channel = config.get('mail_channel', None)
 channel_has_sender = does_channel_have_sender(mail_channel)
 
 attachment_type = config.get('attachment_type', "send_no_attachments")
-encryption_password_excel = config.get('encryption_password_excel', None)
+encryption_password_excel_params = config.get('encryption_password_excel_params', None)
+encryption_password_excel = None
+if encryption_password_excel_params:
+    encryption_password_excel = encryption_password_excel_params.get("password", None)
 
 # Validation part 1 - Check some kind of value/column exists for body, subject, sender and recipient
 
