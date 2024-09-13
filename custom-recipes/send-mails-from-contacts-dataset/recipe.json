@@ -203,13 +203,13 @@
             "getChoicesFromPython": true,
             "description" : "File format for attachments"
         },
-        
+
         {
             "name": "encryption_password_excel_params",
             "label": "Encryption password",
             "type": "PRESET",
             "parameterSetId": "file-encryption",
-            "description" : "(Optional) Password to encrypt excel files, requires DSS 13.0 or above.",
+            "description" : "(Optional) Password to encrypt excel files, requires DSS 13.2 or above.",
              "visibilityCondition" : "model.attachment_type == 'excel_can_ac'"
         },
 
