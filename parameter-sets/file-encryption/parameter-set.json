@@ -1,0 +1,17 @@
+{
+    "meta" : {
+        "label": "Encryption password",
+        "description": "Encryption password for attachment files",
+        "icon": "icon-pi-system icon-cogs"
+    },
+    "defaultDefinableInline": false,
+    "defaultDefinableAtProjectLevel": false,
+    "params": [
+        {
+            "name": "password",
+            "label": "File encryption password",
+            "type": "PASSWORD",
+            "description": "Password to encrypt attachment files. CAUTION: the password entered here is only stored encrypted when defined in a preset."
+        }
+    ]
+}
