@@ -34,6 +34,7 @@
             "label": "Mail Settings",
             "type": "SEPARATOR"
         },
+
         {
             "name": "mail_channel",
             "label" : "Channel",
@@ -202,6 +203,7 @@
             "getChoicesFromPython": true,
             "description" : "File format for attachments"
         },
+        
         {
             "name": "encryption_password_excel_params",
             "label": "Encryption password",
