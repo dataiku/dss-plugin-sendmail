@@ -13,11 +13,14 @@ def do(payload, config, plugin_config, inputs):
         if supports_messaging_channels_and_conditional_formatting(dss_client):
             channels = dss_client.list_messaging_channels(as_type="objects", channel_family="mail")
         for channel in channels:
-            if channel.sender:
+            if 'use_current_user_as_sender' in dir(channel) and channel.use_current_user_as_sender:
+                # If the channel has a locked-down sender using current user, append `(user email)` to label and SENDER_SUFFIX flag to channel ID
+                choices.append(f"{channel.id} (user email)", channel.id + SENDER_SUFFIX)
+            elif channel.sender:
                 # If the channel has a sender append `(<sender email>)` to label and SENDER_SUFFIX flag to channel ID
                 choices.append(f"{channel.id} ({channel.sender})", channel.id + SENDER_SUFFIX)
             else:
-                choices.append(f"{channel.id}",  channel.id)
+                choices.append(f"{channel.id}", channel.id)
 
         # Add an entry for direct SMTP
         if len(channels) > 0:
