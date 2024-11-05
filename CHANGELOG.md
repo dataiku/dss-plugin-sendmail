@@ -1,5 +1,10 @@
 # Changelog
 
+## [Version 1.0.2](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.2) - Feature release - 2024-11
+
+- Features added
+  - Gracefully handle channels where "Use current user as sender" is set.
+
 ## [Version 1.0.1](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.1) - Feature release - 2024-04
 
 - Please read if upgrading from version 1.0.0 of the plugin
