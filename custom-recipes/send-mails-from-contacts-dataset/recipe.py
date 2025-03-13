@@ -107,14 +107,6 @@ else:
 if not is_subject_present:
     raise AttributeError("No value provided for the subject")
 
-is_sender_present = False
-if use_sender_value:
-    is_sender_present = bool(sender_value)
-else:
-    is_sender_present = bool(sender_column)
-if not (channel_has_sender or is_sender_present):
-    raise AttributeError("No value provided for the sender")
-
 if not recipient_column:
     raise AttributeError("No value provided for the recipient")
 
