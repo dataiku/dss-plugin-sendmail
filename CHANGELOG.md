@@ -1,8 +1,8 @@
 # Changelog
 
-## [Version 1.0.2](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.2) - Feature release - 2024-04
+## [Version 1.0.2](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.2) - Feature release - 2025-03
 
-- Support for sending emails to multiple recipients
+- Support for sending emails to multiple recipients (a separate email is sent per recipient in recipient column)
 
 ## [Version 1.0.1](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.1) - Feature release - 2024-04
 
