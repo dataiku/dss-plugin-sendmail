@@ -7,7 +7,6 @@ from dku_attachment_handling import build_attachment_files, attachments_template
 from email_utils import build_email_subject, build_email_message_text
 from jinja2 import Environment, StrictUndefined
 import json
-import collections.abc
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
@@ -35,16 +34,16 @@ def to_real_channel_id(channel_id):
 def does_channel_have_sender(channel_id):
     return channel_id is not None and channel_id.endswith(SENDER_SUFFIX)
 
+# Takes a string and returns a list of one or more address values
 def parse_recipients(recipients):
     try:
+        # JSON array case
         value = json.loads(recipients)
-        if isinstance(value, collections.abc.Sequence) and not isinstance(value, (str)):
-            #value is an array
+        if isinstance(value, list):
             return value
-        else:
-            return [value]
     except json.decoder.JSONDecodeError:
         pass
+    # Other cases - either a single value or comma separated string `name@place.com, name2@place.com`
     return recipients.split(",")
 
 # Get handles on datasets
@@ -168,9 +167,9 @@ with output.get_writer() as writer:
     fail = 0
     try:
         for contact in people.iter_rows():
-            recipients = contact[recipient_column]
-            if recipients:
-                logging.info("Sending to %s" % contact[recipient_column])
+            recipients_string = contact[recipient_column]
+            if recipients_string:
+                logging.info("Sending to %s" % recipients_string)
             else:
                 logging.info("No recipient for row - emailing will fail - row data: %s" % contact)
             contact_dict = dict(contact)
@@ -178,8 +177,7 @@ with output.get_writer() as writer:
                 email_subject = build_email_subject(use_subject_value, subject_template, subject_column, contact_dict)
                 email_body_text = build_email_message_text(use_body_value, body_template, attachments_templating_dict, contact_dict, body_column,
                                                          use_html_body_value)
-                #recipients = contact_dict[recipient_column]
-                recipients = parse_recipients(recipients)
+                recipients = parse_recipients(recipients_string)
                 # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
                 sender = sender_value if use_sender_value else contact_dict.get(sender_column, "")
                 email_client.send_email(sender, recipients, email_subject, email_body_text, attachment_files)
