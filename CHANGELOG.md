@@ -4,7 +4,6 @@
 
 - Add comma-delimited CSV option
 - Add cc and bcc fields
-- Allow inline values for Recipient, cc, bcc
 
 ## [Version 1.0.3](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.3) - Feature release - 2025-03
 
