@@ -84,15 +84,7 @@
             "type": "PASSWORD",
             "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == '__DKU__DIRECT_SMTP__') && model.smtp_use_auth"
         },
-
-        {
-            "name": "recipient_column",
-            "label" : "Recipient (column)",
-            "type": "COLUMN",
-            "columnRole" : "contacts",
-            "description" : "Recipient of the email (from a column)",
-            "mandatory": true
-        },
+        // 2025-08-27 Andy Holst added cc and bcc fields, and adjusted display order
         {
             "name": "sender_column",
             "label" : "Sender (column)",
@@ -114,6 +106,28 @@
             "description" : "Use custom value",
             "type": "BOOLEAN",
             "visibilityCondition" : "!model.mail_channel.endsWith('__WITH_DEFINED_SENDER__')"
+        },
+        {
+            "name": "recipient_column",
+            "label" : "Recipient (column)",
+            "type": "COLUMN",
+            "columnRole" : "contacts",
+            "description" : "Recipient of the email (from a column)",
+            "mandatory": true
+        },
+        {
+            "name": "cc_column",
+            "label" : "cc (column)",
+            "type": "COLUMN",
+            "columnRole" : "contacts",
+            "description" : "Courtesy copy (from a column)"
+        },
+        {
+            "name": "bcc_column",
+            "label" : "bcc (column)",
+            "type": "COLUMN",
+            "columnRole" : "contacts",
+            "description" : "Blind courtesy copy (from a column)"
         },
         {
             "name": "subject_column",
@@ -194,7 +208,7 @@
             "label": "Attachments",
             "type": "SEPARATOR"
         },
-
+        // 2025-08-27 Andy Holst added CSV comma-delimited
         {
             "name": "attachment_type",
             "label" : "Attachments format",
@@ -202,7 +216,8 @@
             "selectChoices" : [
                 {"value": "send_no_attachments", "label": "Do not send attachments"},
                 {"value": "excel", "label": "Excel"},
-                {"value": "csv", "label": "CSV"}
+                {"value": "csv", "label": "CSV tab-delimited"},
+                {"value": "csv_comma", "label": "CSV comma-delimited"}
             ],
             "defaultValue" : "send_no_attachments",
             "description" : "File format for attachments"
