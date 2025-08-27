@@ -59,6 +59,10 @@ config = get_recipe_config()
 
 recipient_column = config.get('recipient_column', None)
 
+# 2025-08-27 Andy Holst added cc and bcc fields
+cc_column = config.get('cc_column', None)
+bcc_column = config.get('bcc_column', None)
+
 sender_column = config.get('sender_column', None)
 sender_value = config.get('sender_value', None)
 use_sender_value = config.get('use_sender_value', False)
@@ -165,6 +169,18 @@ with output.get_writer() as writer:
             else:
                 logging.info("No recipient for row - emailing will fail - row data: %s" % contact)
             contact_dict = dict(contact)
+
+            # 2025-08-27 Andy Holst added cc and bcc fields
+            if cc_column:
+                cc_recipient = contact[cc_column] if contact[cc_column] != "" else None
+            else:
+                cc_recipient = None
+                
+            if bcc_column:
+                bcc_recipient = contact[bcc_column] if contact[bcc_column] != "" else None
+            else:
+                bcc_recipient = None
+                
             try:
                 email_subject = build_email_subject(use_subject_value, subject_template, subject_column, contact_dict)
                 email_body_text = build_email_message_text(use_body_value, body_template, attachments_templating_dict, contact_dict, body_column,
@@ -172,7 +188,9 @@ with output.get_writer() as writer:
                 recipients = parse_recipients(recipients_string)
                 # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
                 sender = sender_value if use_sender_value else contact_dict.get(sender_column, "")
-                email_client.send_email(sender, recipients, email_subject, email_body_text, attachment_files)
+
+                # 2025-08-27 Andy Holst added cc and bcc fields
+                email_client.send_email(sender, recipients, cc_recipient, bcc_recipient, email_subject, email_body_text, attachment_files)
 
                 contact_dict['sendmail_status'] = 'SUCCESS'
                 success += 1
