@@ -207,7 +207,6 @@
             "label": "Attachments",
             "type": "SEPARATOR"
         },
-        // 2025-08-27 Andy Holst added CSV comma-delimited
         {
             "name": "attachment_type",
             "label" : "Attachments format",
