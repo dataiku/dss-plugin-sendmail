@@ -59,7 +59,6 @@ config = get_recipe_config()
 
 recipient_column = config.get('recipient_column', None)
 
-# 2025-08-27 Andy Holst added cc and bcc fields
 cc_column = config.get('cc_column', None)
 bcc_column = config.get('bcc_column', None)
 
@@ -124,9 +123,21 @@ for arg in ['subject', 'body']:
 if not channel_has_sender and not use_sender_value and sender_column not in people_columns:
     raise AttributeError("The column you specified for sender (%s) was not found." % sender_column)
 
-if recipient_column not in people_columns:
-    raise AttributeError("The column you specified for recipient (%s) was not found." % recipient_column)
+for arg in [recipient_column, cc_column, bcc_column]:
+    if not arg:
+        # recipient_column would have previously failed in Validation Part 1
+        pass
+    elif arg not in people_columns:
+        raise AttributeError("The column you specified (%s) was not found." % arg)
+    
+# Validation part 3 - validate that recipient, cc, and bcc are string datatypes
+people_schema = people.read_schema()
 
+for check in [recipient_column, cc_column, bcc_column]:
+    for item in people_schema:
+        if item['name'] == check:
+            if item['type'] != 'string':
+                raise AttributeError("The column you specified for (%s) was not datatype string." % item['name'])
 
 # Create Jinja templates if needed
 
@@ -163,34 +174,27 @@ with output.get_writer() as writer:
     fail = 0
     try:
         for contact in people.iter_rows():
-            recipients_string = contact[recipient_column]
+            recipients_string = contact[recipient_column]            
+            cc_string = contact[cc_column] if cc_column else None
+            bcc_string = contact[bcc_column] if bcc_column else None
             if recipients_string:
                 logging.info("Sending to %s" % recipients_string)
             else:
                 logging.info("No recipient for row - emailing will fail - row data: %s" % contact)
             contact_dict = dict(contact)
-
-            # 2025-08-27 Andy Holst added cc and bcc fields
-            if cc_column:
-                cc_recipient = contact[cc_column] if contact[cc_column] != "" else None
-            else:
-                cc_recipient = None
-                
-            if bcc_column:
-                bcc_recipient = contact[bcc_column] if contact[bcc_column] != "" else None
-            else:
-                bcc_recipient = None
                 
             try:
                 email_subject = build_email_subject(use_subject_value, subject_template, subject_column, contact_dict)
                 email_body_text = build_email_message_text(use_body_value, body_template, attachments_templating_dict, contact_dict, body_column,
                                                          use_html_body_value)
                 recipients = parse_recipients(recipients_string)
+                cc_recipients = parse_recipients(cc_string) if cc_string else None
+                bcc_recipients = parse_recipients(bcc_string) if bcc_string else None  
+                
                 # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
                 sender = sender_value if use_sender_value else contact_dict.get(sender_column, "")
 
-                # 2025-08-27 Andy Holst added cc and bcc fields
-                email_client.send_email(sender, recipients, cc_recipient, bcc_recipient, email_subject, email_body_text, attachment_files)
+                email_client.send_email(sender, recipients, cc_recipients, bcc_recipients, email_subject, email_body_text, attachment_files)
 
                 contact_dict['sendmail_status'] = 'SUCCESS'
                 success += 1
