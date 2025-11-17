@@ -84,7 +84,6 @@
             "type": "PASSWORD",
             "visibilityCondition" : "(model.mail_channel == null || model.mail_channel == '__DKU__DIRECT_SMTP__') && model.smtp_use_auth"
         },
-        // 2025-08-27 Andy Holst added cc and bcc fields, and adjusted display order
         {
             "name": "sender_column",
             "label" : "Sender (column)",
