@@ -158,7 +158,7 @@ class SmtpEmailClient(AbstractMessageClient):
         msg["To"] = ",".join(recipients)
 
         msg["Cc"] = ",".join(cc_recipients)
-        all_recipients = [recipients] + cc_recipients + bcc_recipients
+        all_recipients = recipients + cc_recipients + bcc_recipients
         
         msg["Subject"] = email_subject
         body_encoding = "utf-8"
