@@ -188,8 +188,8 @@ with output.get_writer() as writer:
                 email_body_text = build_email_message_text(use_body_value, body_template, attachments_templating_dict, contact_dict, body_column,
                                                          use_html_body_value)
                 recipients = parse_recipients(recipients_string)
-                cc_recipients = parse_recipients(cc_string) if cc_string else None
-                bcc_recipients = parse_recipients(bcc_string) if bcc_string else None  
+                cc_recipients = parse_recipients(cc_string) if cc_string else [""]
+                bcc_recipients = parse_recipients(bcc_string) if bcc_string else [""]  
                 
                 # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
                 sender = sender_value if use_sender_value else contact_dict.get(sender_column, "")
