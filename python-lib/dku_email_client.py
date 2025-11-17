@@ -43,15 +43,14 @@ class AbstractMessageClient(ABC):
     def __init__(self, plain_text):
         self.plain_text = plain_text
 
-    # 2025-08-27 Andy Holst added cc and bcc fields
     @abstractmethod
-    def send_email(self, sender, recipients, cc_recipient, bcc_recipient, email_body, email_subject, attachment_files):
+    def send_email(self, sender, recipients, cc_recipients, bcc_recipients, email_body, email_subject, attachment_files):
         """
         Sends a separate email to each recipient
         :param sender: sender email, str - is ignored if a sender configured for the channel
         :param recipients: recipients email addresses, list
-        :param cc_recipient: cc recipient email, str
-        :param bcc_recipient bcc recipient email, str
+        :param cc_recipients: cc recipient emails, list
+        :param bcc_recipients bcc recipient emails, list
         :param email_subject: str
         :param email_body: body of either plain text or html, str
         :param attachment_files:attachments as list of AttachmentFile
@@ -83,28 +82,20 @@ class ChannelClient(AbstractMessageClient):
         logging.info(f"Configured channel messaging client with channel {channel_id} - type: {self.channel.type}, "
                      f"sender: {self.channel.sender}, plain_text? {self.plain_text}")
     
-    # 2025-08-27 Andy Holst added cc and bcc fields
-    def send_email(self, sender, recipients, cc_recipient, bcc_recipient, email_subject, email_body, attachment_files):
+    def send_email(self, sender, recipients, cc_recipients, bcc_recipients, email_subject, email_body, attachment_files):
         files = [(a.file_name, a.data, f"{a.mime_type}/{a.mime_subtype}") for a in attachment_files]
         sender_to_use = None if self.channel.sender else sender
 
-        # 2025-08-27 Andy Holst added cc and bcc fields
-        cc_list = cc_recipient.split(",") if cc_recipient != None else []
-        bcc_list = bcc_recipient.split(",") if bcc_recipient != None else []
-
-        # 2025-08-27 Andy Holst added cc and bcc fields
         for recipient in recipients:
-            all_recipient = [recipient] + cc_list + bcc_list
-            self.channel.send(self.project_id, 
-                              all_recipient,
-                              #[recipient], 
+            self.channel.send(self.project_id,
+                              [recipient], 
                               email_subject, 
                               email_body, 
                               attachments=files, 
                               plain_text=self.plain_text, 
                               sender=sender_to_use,
-                              cc=cc_list,
-                              bcc=bcc_list)
+                              cc=cc_recipients,
+                              bcc=bcc_recipients)
 
 
 class SmtpEmailClient(AbstractMessageClient):
@@ -151,14 +142,13 @@ class SmtpEmailClient(AbstractMessageClient):
             attachment_mimes.append(mime_app)
         return attachment_mimes
 
-    # 2025-08-27 Andy Holst added cc and bcc fields
-    def send_single_email(self, sender, recipients, cc_recipient, bcc_recipient, email_subject, email_body, attachment_mimes):
+    def send_single_email(self, sender, recipients, cc_recipients, bcc_recipients, email_subject, email_body, attachment_mimes):
         """
         Sends a separate email to each recipient
         :param sender: sender email, str - is ignored if a sender configured for the channel
         :param recipients: recipients email addresses, list
-        :param cc_recipient: cc recipient email, str
-        :param bcc_recipient bcc recipient email, str
+        :param cc_recipients: cc recipient emails, list
+        :param bcc_recipients: bcc recipient emails, list
         :param email_subject: str
         :param email_body: body of either plain text or html, str
         :param attachment_mimes, list of MIMEBase
@@ -167,11 +157,8 @@ class SmtpEmailClient(AbstractMessageClient):
         msg["From"] = sender
         msg["To"] = ",".join(recipients)
 
-        # 2025-08-27 Andy Holst added cc and bcc fields
-        msg["Cc"] = cc_recipient
-        cc_list = cc_recipient.split(",") if cc_recipient != None else []
-        bcc_list = bcc_recipient.split(",") if bcc_recipient != None else []
-        all_recipient = [recipients] + cc_list + bcc_list
+        msg["Cc"] = ",".join(cc_recipients)
+        all_recipients = [recipients] + cc_recipients + bcc_recipients
         
         msg["Subject"] = email_subject
         body_encoding = "utf-8"
@@ -180,14 +167,12 @@ class SmtpEmailClient(AbstractMessageClient):
         for mime_app in attachment_mimes:
             msg.attach(mime_app)
 
-        # 2025-08-27 Andy Holst added cc and bcc fields
-        self.smtp.sendmail(sender, all_recipient, msg.as_string())
+        self.smtp.sendmail(sender, all_recipients, msg.as_string())
 
-    # 2025-08-27 Andy Holst added cc and bcc fields
-    def send_email(self, sender, recipients, cc_recipient, bcc_recipient, email_subject, email_body, attachment_files):
+    def send_email(self, sender, recipients, cc_recipients, bcc_recipients, email_subject, email_body, attachment_files):
         attachment_mimes = self.attachments_to_mime(attachment_files)
         for recipient in recipients:
-            self.send_single_email(sender, [recipient], cc_recipient, bcc_recipient, email_subject, email_body, attachment_mimes)
+            self.send_single_email(sender, [recipient], cc_recipients, bcc_recipients, email_subject, email_body, attachment_mimes)
 
     def quit(self):
         """ Do any disconnection needed"""
