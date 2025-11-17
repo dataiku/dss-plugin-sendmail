@@ -53,37 +53,27 @@ def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_
     # Still, if the config has "excel_can_ac" and is run from the flow, we want to treat as excel (it means the user saved in v1.0.0 and did not reopen it)
     is_excel = attachment_type == "excel" or attachment_type == "excel_can_ac"
 
-    # 2025-08-27 Andy Holst added handling of comma-delimited CSV export
-    is_tab_csv = attachment_type == "csv"
-
     format_params = None
     if is_excel:
         request_fmt = "excel"
         if apply_coloring_excel and supports_messaging_channels_and_conditional_formatting(dataiku.api_client()):
             format_params = {"applyColoring": True}
-    # 2025-08-27 Andy Holst added handling of comma-delimited CSV export
-    #else:
-    #    request_fmt = "tsv-excel-header"
-    elif is_tab_csv:
+    elif attachment_type == "csv_comma":
+        request_fmt = "csv"
+        format_params={"style": "excel", "separator": ",", "quoteChar" : "\"", "parseHeaderRow": True}
+    else:
         request_fmt = "tsv-excel-header"
 
     # Prepare attachments
     attachment_files = []
     for attachment_ds in attachment_datasets:
-        # 2025-08-27 Andy Holst added handling of comma-delimited CSV export
-        if is_excel | is_tab_csv:
-            with attachment_ds.raw_formatted_data(format=request_fmt, format_params=format_params) as stream:
-                file_bytes = stream.read()
-            if is_excel:
-                attachment_files.append(AttachmentFile(attachment_ds.full_name + ".xlsx", "application",
-                                                         "vnd.openxmlformats-officedocument.spreadsheetml.sheet", file_bytes))
-            else:
-                attachment_files.append(AttachmentFile(attachment_ds.full_name + ".csv", "text", "csv", file_bytes))
-        
-        # 2025-08-27 Andy Holst added handling of comma-delimited CSV export
+    for attachment_ds in attachment_datasets:
+        with attachment_ds.raw_formatted_data(format=request_fmt, format_params=format_params) as stream:
+            file_bytes = stream.read()
+        if is_excel:
+            attachment_files.append(AttachmentFile(attachment_ds.full_name + ".xlsx", "application",
+                                                     "vnd.openxmlformats-officedocument.spreadsheetml.sheet", file_bytes))
+            
         else:
-            attachment_df = attachment_ds.get_dataframe()
-            csv_data = attachment_df.to_csv(index = False)
-            attachment_files.append(AttachmentFile(attachment_ds.full_name + ".csv", "text", "csv", csv_data))
-    
+            attachment_files.append(AttachmentFile(attachment_ds.full_name + ".csv", "text", "csv", file_bytes))
     return attachment_files
