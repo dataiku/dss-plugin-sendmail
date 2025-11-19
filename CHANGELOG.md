@@ -1,6 +1,6 @@
 # Changelog
 
-## [Version 1.0.4]() - Custom feature release 2025-11
+## [Version 1.0.4]() - Feature release - 2025-11
 
 - Add comma-delimited CSV option
 - Add cc and bcc fields
