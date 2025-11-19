@@ -157,6 +157,8 @@ class SmtpEmailClient(AbstractMessageClient):
         msg["From"] = sender
         msg["To"] = ",".join(recipients)
 
+        # Note: bcc recipients are implicitly handled, by excluding from msg but including in all_recipients
+        # See: https://stackoverflow.com/questions/1546367/how-to-send-mail-with-to-cc-and-bcc#:~:text=2%20Comments-,Add%20a%20comment,is%20in%20textfile%20for%20reading.
         msg["Cc"] = ",".join(cc_recipients)
         all_recipients = recipients + cc_recipients + bcc_recipients
         
