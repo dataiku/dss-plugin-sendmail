@@ -46,6 +46,14 @@ def parse_recipients(recipients):
     # Other cases - either a single value or comma separated string `name@place.com, name2@place.com`
     return recipients.split(",")
 
+# Validates that columns (eg recipient, cc, bcc) are string datatype
+def confirm_string_column(column_name, schema):
+    column = next(filter(lambda col: col['name'] == column_name, schema), None)
+    if not column:
+          raise AttributeError("The column you specified (%s) was not found." % column_name)
+    if column['type'] != 'string':
+        raise AttributeError("The column you specified (%s) was not datatype string." % column_name)
+
 # Get handles on datasets
 output_A_names = get_output_names_for_role('output')
 output = dataiku.Dataset(output_A_names[0]) if len(output_A_names) > 0 else None
@@ -114,30 +122,21 @@ if not recipient_column:
     raise AttributeError("No value provided for the recipient")
 
 
-# Validation part 2 - when necessary, check the column values provided are in the contacts (people) dataset
-people_columns = [p['name'] for p in people.read_schema()]
+# Validation part 2 - when necessary, check the columns given are present as string columns in the contacts (people) dataset
+people_schema = people.read_schema()
 for arg in ['subject', 'body']:
-    if not globals()["use_" + arg + "_value"] and globals()[arg + "_column"] not in people_columns:
-        raise AttributeError("The column you specified for %s (%s) was not found." % (arg, globals()[arg + "_column"]))
+   if not globals()["use_" + arg + "_value"]:
+       confirm_string_column(globals()[arg + "_column"], people_schema)       
 
-if not channel_has_sender and not use_sender_value and sender_column not in people_columns:
-    raise AttributeError("The column you specified for sender (%s) was not found." % sender_column)
+if not channel_has_sender and not use_sender_value:    
+   confirm_string_column(sender_column, people_schema)
 
 for arg in [recipient_column, cc_column, bcc_column]:
-    if not arg:
-        # recipient_column would have previously failed in Validation Part 1
-        pass
-    elif arg not in people_columns:
-        raise AttributeError("The column you specified (%s) was not found." % arg)
-    
-# Validation part 3 - validate that recipient, cc, and bcc are string datatypes
-people_schema = people.read_schema()
-
-for check in [recipient_column, cc_column, bcc_column]:
-    for item in people_schema:
-        if item['name'] == check:
-            if item['type'] != 'string':
-                raise AttributeError("The column you specified for (%s) was not datatype string." % item['name'])
+   if not arg:
+       # recipient_column would have previously failed in Validation Part 1
+       pass
+   else:
+       confirm_string_column(arg, people_schema)
 
 # Create Jinja templates if needed
 
