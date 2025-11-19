@@ -61,12 +61,13 @@ def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_
     elif attachment_type == "csv_comma":
         request_fmt = "csv"
         format_params={"style": "excel", "separator": ",", "quoteChar" : "\"", "parseHeaderRow": True}
+    
+    # We expect attachment_type == "csv" here, revisit if future types/options are added in future
     else:
         request_fmt = "tsv-excel-header"
 
     # Prepare attachments
     attachment_files = []
-    for attachment_ds in attachment_datasets:
     for attachment_ds in attachment_datasets:
         with attachment_ds.raw_formatted_data(format=request_fmt, format_params=format_params) as stream:
             file_bytes = stream.read()
