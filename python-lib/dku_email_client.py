@@ -86,6 +86,9 @@ class ChannelClient(AbstractMessageClient):
         files = [(a.file_name, a.data, f"{a.mime_type}/{a.mime_subtype}") for a in attachment_files]
         sender_to_use = None if self.channel.sender else sender
 
+        if not recipients:
+            raise Exception("No recipients provided to send to")
+
         for recipient in recipients:
             self.channel.send(self.project_id,
                               [recipient], 
@@ -169,10 +172,16 @@ class SmtpEmailClient(AbstractMessageClient):
         for mime_app in attachment_mimes:
             msg.attach(mime_app)
 
-        self.smtp.sendmail(sender, all_recipients, msg.as_string())
+        try:
+            self.smtp.sendmail(sender, all_recipients, msg.as_string())
+        finally:
+            # Explicitly reset the session or "Error: nested MAIL command" error is possible
+            self.smtp.rset()
 
     def send_email(self, sender, recipients, cc_recipients, bcc_recipients, email_subject, email_body, attachment_files):
         attachment_mimes = self.attachments_to_mime(attachment_files)
+        if not recipients:
+            raise Exception("No recipients provided to send to")
         for recipient in recipients:
             self.send_single_email(sender, [recipient], cc_recipients, bcc_recipients, email_subject, email_body, attachment_mimes)
 
