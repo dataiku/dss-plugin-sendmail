@@ -34,25 +34,33 @@ def to_real_channel_id(channel_id):
 def does_channel_have_sender(channel_id):
     return channel_id is not None and channel_id.endswith(SENDER_SUFFIX)
 
-# Takes a string and returns a list of one or more address values
+# Takes a string and returns a list of address values, could be empty - any no blank/empty strings are filtered out
 def parse_recipients(recipients):
+    if not recipients:
+        # Handle None and empty strings quickly
+        return []
+    json_array_found = False
     try:
         # JSON array case
         value = json.loads(recipients)
         if isinstance(value, list):
-            return value
+            recipients_list = value
+            json_array_found = True
     except json.decoder.JSONDecodeError:
         pass
     # Other cases - either a single value or comma separated string `name@place.com, name2@place.com`
-    return recipients.split(",")
+    if not json_array_found:
+        recipients_list = recipients.split(",")
 
-# Validates that columns (eg recipient, cc, bcc) are string datatype
-def confirm_string_column(column_name, schema):
+    filter_out_blanks = lambda item: bool(item) and not (isinstance(item, (str)) and item.isspace())
+    filtered_list = list(filter(filter_out_blanks, recipients_list))
+    return filtered_list
+
+# Validates column exists in schema
+def confirm_column(column_name, schema):
     column = next(filter(lambda col: col['name'] == column_name, schema), None)
     if not column:
           raise AttributeError("The column you specified (%s) was not found." % column_name)
-    if column['type'] != 'string':
-        raise AttributeError("The column you specified (%s) was not datatype string." % column_name)
 
 # Get handles on datasets
 output_A_names = get_output_names_for_role('output')
@@ -97,7 +105,7 @@ channel_has_sender = does_channel_have_sender(mail_channel)
 
 attachment_type = config.get('attachment_type', "send_no_attachments")
 
-# Validation part 1 - Check some kind of value/column exists for body, subject, sender and recipient
+# Validation part 1 - Check some kind of value/column has been given for body, subject, sender and recipient
 
 is_body_present = False
 if use_body_value:
@@ -118,25 +126,37 @@ else:
 if not is_subject_present:
     raise AttributeError("No value provided for the subject")
 
+is_sender_present = False
+
+if channel_has_sender:
+    is_sender_present = True
+else:
+    if use_sender_value:
+        is_sender_present = bool(sender_value)
+    else:
+        is_sender_present = bool(sender_column)
+if not is_sender_present:
+    raise AttributeError("No value provided for the sender")
+
 if not recipient_column:
     raise AttributeError("No value provided for the recipient")
 
 
-# Validation part 2 - when necessary, check the columns given are present as string columns in the contacts (people) dataset
+# Validation part 2 - when necessary, check the columns given exist in the contacts (people) dataset
 people_schema = people.read_schema()
 for arg in ['subject', 'body']:
    if not globals()["use_" + arg + "_value"]:
-       confirm_string_column(globals()[arg + "_column"], people_schema)       
+       confirm_column(globals()[arg + "_column"], people_schema)       
 
 if not channel_has_sender and not use_sender_value:    
-   confirm_string_column(sender_column, people_schema)
+   confirm_column(sender_column, people_schema)
 
 for arg in [recipient_column, cc_column, bcc_column]:
    if not arg:
        # recipient_column would have previously failed in Validation Part 1
        pass
    else:
-       confirm_string_column(arg, people_schema)
+       confirm_column(arg, people_schema)
 
 # Create Jinja templates if needed
 
@@ -187,8 +207,8 @@ with output.get_writer() as writer:
                 email_body_text = build_email_message_text(use_body_value, body_template, attachments_templating_dict, contact_dict, body_column,
                                                          use_html_body_value)
                 recipients = parse_recipients(recipients_string)
-                cc_recipients = parse_recipients(cc_string) if cc_string else [""]
-                bcc_recipients = parse_recipients(bcc_string) if bcc_string else [""]  
+                cc_recipients = parse_recipients(cc_string)
+                bcc_recipients = parse_recipients(bcc_string)
                 
                 # Note - if the channel has a sender configured, the sender value will be ignored by the email client here
                 sender = sender_value if use_sender_value else contact_dict.get(sender_column, "")
@@ -200,7 +220,7 @@ with output.get_writer() as writer:
                 if writer:
                     writer.write_row_dict(contact_dict)
             except Exception as e:
-                logging.exception("Send failed")
+                logging.exception("Send failed: %s", str(e))
                 fail += 1
                 contact_dict['sendmail_status'] = 'FAILED'
                 contact_dict['sendmail_error'] = str(e)
