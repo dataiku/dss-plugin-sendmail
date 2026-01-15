@@ -1,6 +1,6 @@
 # Changelog
 
-## [Version 1.0.4](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.4) - Feature release - 2025-12
+## [Version 1.1.0](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.1.0) - Feature release - 2026-01
 
 - Add comma-delimited CSV option
 - Add cc and bcc fields
