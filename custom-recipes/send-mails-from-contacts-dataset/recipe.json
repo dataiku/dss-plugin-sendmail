@@ -111,7 +111,7 @@
             "label" : "Recipient (column)",
             "type": "COLUMN",
             "columnRole" : "contacts",
-            "description" : "Recipient of the email (from a column)",
+            "description" : "Recipient(s) of the email (comma-separated or array, from a column)",
             "mandatory": true
         },
         {
@@ -119,14 +119,14 @@
             "label" : "cc (column)",
             "type": "COLUMN",
             "columnRole" : "contacts",
-            "description" : "Courtesy copy (from a column)"
+            "description" : "Courtesy copy (comma-separated or array, from a column)"
         },
         {
             "name": "bcc_column",
             "label" : "bcc (column)",
             "type": "COLUMN",
             "columnRole" : "contacts",
-            "description" : "Blind courtesy copy (from a column)"
+            "description" : "Blind courtesy copy (comma-separated or array, from a column)"
         },
         {
             "name": "subject_column",
