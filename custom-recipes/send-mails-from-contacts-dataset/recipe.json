@@ -119,14 +119,14 @@
             "label" : "cc (column)",
             "type": "COLUMN",
             "columnRole" : "contacts",
-            "description" : "Courtesy copy (comma-separated or array, from a column)"
+            "description" : "Courtesy copy (comma-separated or array, from a column). Note: Duplicate data will cause multiple emails."
         },
         {
             "name": "bcc_column",
             "label" : "bcc (column)",
             "type": "COLUMN",
             "columnRole" : "contacts",
-            "description" : "Blind courtesy copy (comma-separated or array, from a column)"
+            "description" : "Blind courtesy copy (comma-separated or array, from a column). Note: Duplicate data will cause multiple emails."
         },
         {
             "name": "subject_column",
