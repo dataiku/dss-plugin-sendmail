@@ -1,6 +1,6 @@
 {
 	"id": "sendmail",
-	"version": "1.0.3",
+	"version": "1.1.0",
 	"meta": {
 		"label": "Send emails",
 		"description": "Send emails based on a dataset containing a list of contacts, with optional attachments (other datasets)",
@@ -8,7 +8,8 @@
 		"icon": "icon-envelope-alt",
 		"licenseInfo": "Apache Software License",
 		"url": "https://www.dataiku.com/dss/plugins/info/sendmail.html",
-		"tags": ["Marketing"],
-        "supportLevel": "NOT_SUPPORTED"
+		"tags": ["Productivity","Export"],
+        "supportLevel": "NOT_SUPPORTED",
+		"category": "Digital Marketing"
 	}
 }

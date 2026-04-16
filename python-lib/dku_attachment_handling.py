@@ -58,6 +58,11 @@ def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_
         request_fmt = "excel"
         if apply_coloring_excel and supports_messaging_channels_and_conditional_formatting(dataiku.api_client()):
             format_params = {"applyColoring": True}
+    elif attachment_type == "csv_comma":
+        request_fmt = "csv"
+        format_params={"style": "excel", "separator": ",", "quoteChar" : "\"", "parseHeaderRow": True}
+    
+    # We expect attachment_type == "csv" here, revisit if future types/options are added in future
     else:
         request_fmt = "tsv-excel-header"
 
@@ -69,6 +74,7 @@ def build_attachment_files(attachment_datasets, attachment_type, apply_coloring_
         if is_excel:
             attachment_files.append(AttachmentFile(attachment_ds.full_name + ".xlsx", "application",
                                                      "vnd.openxmlformats-officedocument.spreadsheetml.sheet", file_bytes))
+            
         else:
             attachment_files.append(AttachmentFile(attachment_ds.full_name + ".csv", "text", "csv", file_bytes))
     return attachment_files

@@ -44,11 +44,13 @@ class AbstractMessageClient(ABC):
         self.plain_text = plain_text
 
     @abstractmethod
-    def send_email(self, sender, recipients, email_body, email_subject, attachment_files):
+    def send_email(self, sender, recipients, cc_recipients, bcc_recipients, email_body, email_subject, attachment_files):
         """
         Sends a separate email to each recipient
         :param sender: sender email, str - is ignored if a sender configured for the channel
         :param recipients: recipients email addresses, list
+        :param cc_recipients: cc recipient emails, list
+        :param bcc_recipients bcc recipient emails, list
         :param email_subject: str
         :param email_body: body of either plain text or html, str
         :param attachment_files:attachments as list of AttachmentFile
@@ -79,12 +81,24 @@ class ChannelClient(AbstractMessageClient):
 
         logging.info(f"Configured channel messaging client with channel {channel_id} - type: {self.channel.type}, "
                      f"sender: {self.channel.sender}, plain_text? {self.plain_text}")
-
-    def send_email(self, sender, recipients, email_subject, email_body, attachment_files):
+    
+    def send_email(self, sender, recipients, cc_recipients, bcc_recipients, email_subject, email_body, attachment_files):
         files = [(a.file_name, a.data, f"{a.mime_type}/{a.mime_subtype}") for a in attachment_files]
         sender_to_use = None if self.channel.sender else sender
+
+        if not recipients:
+            raise Exception("No recipients provided to send to")
+
         for recipient in recipients:
-            self.channel.send(self.project_id, [recipient], email_subject, email_body, attachments=files, plain_text=self.plain_text, sender=sender_to_use)
+            self.channel.send(self.project_id,
+                              [recipient], 
+                              email_subject, 
+                              email_body, 
+                              attachments=files, 
+                              plain_text=self.plain_text, 
+                              sender=sender_to_use,
+                              cc=cc_recipients,
+                              bcc=bcc_recipients)
 
 
 class SmtpEmailClient(AbstractMessageClient):
@@ -131,11 +145,13 @@ class SmtpEmailClient(AbstractMessageClient):
             attachment_mimes.append(mime_app)
         return attachment_mimes
 
-    def send_single_email(self, sender, recipients, email_subject, email_body, attachment_mimes):
+    def send_single_email(self, sender, recipients, cc_recipients, bcc_recipients, email_subject, email_body, attachment_mimes):
         """
         Sends a separate email to each recipient
         :param sender: sender email, str - is ignored if a sender configured for the channel
         :param recipients: recipients email addresses, list
+        :param cc_recipients: cc recipient emails, list
+        :param bcc_recipients: bcc recipient emails, list
         :param email_subject: str
         :param email_body: body of either plain text or html, str
         :param attachment_mimes, list of MIMEBase
@@ -143,18 +159,31 @@ class SmtpEmailClient(AbstractMessageClient):
         msg = MIMEMultipart()
         msg["From"] = sender
         msg["To"] = ",".join(recipients)
+
+        # Note: bcc recipients are implicitly handled, by excluding from msg but including in all_recipients
+        # See: https://stackoverflow.com/questions/1546367/how-to-send-mail-with-to-cc-and-bcc#:~:text=2%20Comments-,Add%20a%20comment,is%20in%20textfile%20for%20reading.
+        msg["Cc"] = ",".join(cc_recipients)
+        all_recipients = recipients + cc_recipients + bcc_recipients
+        
         msg["Subject"] = email_subject
         body_encoding = "utf-8"
         text_type = 'plain' if self.plain_text else 'html'
         msg.attach(MIMEText(email_body, text_type, body_encoding))
         for mime_app in attachment_mimes:
             msg.attach(mime_app)
-        self.smtp.sendmail(sender, recipients, msg.as_string())
 
-    def send_email(self, sender, recipients, email_subject, email_body, attachment_files):
+        try:
+            self.smtp.sendmail(sender, all_recipients, msg.as_string())
+        finally:
+            # Explicitly reset the session or "Error: nested MAIL command" error is possible
+            self.smtp.rset()
+
+    def send_email(self, sender, recipients, cc_recipients, bcc_recipients, email_subject, email_body, attachment_files):
         attachment_mimes = self.attachments_to_mime(attachment_files)
+        if not recipients:
+            raise Exception("No recipients provided to send to")
         for recipient in recipients:
-            self.send_single_email(sender, [recipient], email_subject, email_body, attachment_mimes)
+            self.send_single_email(sender, [recipient], cc_recipients, bcc_recipients, email_subject, email_body, attachment_mimes)
 
     def quit(self):
         """ Do any disconnection needed"""
