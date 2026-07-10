@@ -1,7 +1,79 @@
 from dss_selector_choices import DSSSelectorChoices, SENDER_SUFFIX
 from dku_support_detection import supports_messaging_channels_and_conditional_formatting
+from jinja2 import Environment, StrictUndefined
+from dku_attachment_handling import attachments_template_dict
+from email_utils import build_email_message_text
 import dataiku
+import re
 
+EMAIL_TEMPLATE_PREVIEW_CALLBACK = "preview_email_body"
+DATAIKU_VARIABLE_PATTERN = re.compile(r"\$\{([^}]+)\}")
+
+jinja_env = Environment(undefined=StrictUndefined)
+
+def _expand_dataiku_variables(text):
+    try:
+        variables = dataiku.get_custom_variables()
+    except Exception:
+        return text or ""
+
+    def replace(match):
+        name = match.group(1).strip()
+        return str(variables.get(name, match.group(0)))
+
+    return DATAIKU_VARIABLE_PATTERN.sub(replace, text or "")
+
+def _input_names_for_role(inputs, role):
+    return [
+        input_desc.get("fullName")
+        for input_desc in (inputs or [])
+        if input_desc.get("role") == role and input_desc.get("fullName")
+    ]
+
+
+def _first_row(dataset):
+    for row in dataset.iter_rows():
+        return dict(row)
+    return None
+
+
+def preview_email_body(payload, config, inputs):
+    html = _expand_dataiku_variables(payload.get("html") or "")
+
+    contact_names = _input_names_for_role(inputs, "contacts")
+    if not contact_names:
+        return {"html": html}
+
+    people = dataiku.Dataset(contact_names[0])
+    contact_dict = _first_row(people)
+    if contact_dict is None:
+        return {"html": html}
+
+    attachment_datasets = [
+        dataiku.Dataset(dataset_name)
+        for dataset_name in _input_names_for_role(inputs, "attachments")
+    ]
+
+    attachments_templating_dict = attachments_template_dict(
+        attachment_datasets,
+        people.project_key,
+        (config or {}).get("apply_coloring_excel", False),
+    )
+
+    try:
+        body_template = jinja_env.from_string(html)
+        rendered_html = build_email_message_text(
+            True,
+            body_template,
+            attachments_templating_dict,
+            contact_dict,
+            None,
+            True,
+        )
+    except Exception as e:
+        return {"html": html, "error": str(e)}
+
+    return {"html": rendered_html}
 
 def do(payload, config, plugin_config, inputs):
     dss_client = dataiku.api_client()
@@ -30,3 +102,8 @@ def do(payload, config, plugin_config, inputs):
             # If there is no choice, put SMTP there but with a key of None, so it will be the default instead of "Nothing selected"
             choices.append("Manually define SMTP", None)
         return choices.to_dss()
+
+    if payload.get("templatePreviewCallback") == EMAIL_TEMPLATE_PREVIEW_CALLBACK:
+        return preview_email_body(payload, config, inputs)
+
+    return {}
