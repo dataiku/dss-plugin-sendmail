@@ -3,7 +3,7 @@
 	"version": "1.1.0",
 	"meta": {
 		"label": "Send emails",
-		"description": "Send emails based on a dataset containing a list of contacts, with optional attachments (other datasets)",
+		"description": "Send emails based on a dataset containing a list of contacts, with optional attachments (other datasets). Requires DSS 15.1 or above",
 		"author": "Dataiku",
 		"icon": "icon-envelope-alt",
 		"licenseInfo": "Apache Software License",
