@@ -56,7 +56,7 @@ def preview_email_body(payload, config, inputs):
 
     attachments_templating_dict = attachments_template_dict(
         attachment_datasets,
-        people.project_key,
+        dataiku.default_project_key(),
         (config or {}).get("apply_coloring_excel", False),
     )
 
