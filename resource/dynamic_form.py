@@ -4,24 +4,11 @@ from jinja2 import Environment, StrictUndefined
 from dku_attachment_handling import attachments_template_dict
 from email_utils import build_email_message_text
 import dataiku
-import re
 
 EMAIL_TEMPLATE_PREVIEW_CALLBACK = "preview_email_body"
-DATAIKU_VARIABLE_PATTERN = re.compile(r"\$\{([^}]+)\}")
 
 jinja_env = Environment(undefined=StrictUndefined)
 
-def _expand_dataiku_variables(text):
-    try:
-        variables = dataiku.get_custom_variables()
-    except Exception:
-        return text or ""
-
-    def replace(match):
-        name = match.group(1).strip()
-        return str(variables.get(name, match.group(0)))
-
-    return DATAIKU_VARIABLE_PATTERN.sub(replace, text or "")
 
 def _input_names_for_role(inputs, role):
     return [
@@ -38,7 +25,7 @@ def _first_row(dataset):
 
 
 def preview_email_body(payload, config, inputs):
-    html = _expand_dataiku_variables(payload.get("html") or "")
+    html = payload.get("html") or ""
 
     contact_names = _input_names_for_role(inputs, "contacts")
     if not contact_names:
@@ -94,7 +81,7 @@ def do(payload, config, plugin_config, inputs):
             else:
                 choices.append(f"{channel.id}", channel.id)
 
-        # Add an entry for direct SMTP
+                # Add an entry for direct SMTP
         if len(channels) > 0:
             # If there is a choice of channels, giving direct SMTP a key of "__DKU__DIRECT_SMTP__" means it is there but not as default
             choices.append("Manually define SMTP", "__DKU__DIRECT_SMTP__")
