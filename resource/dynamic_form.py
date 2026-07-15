@@ -25,7 +25,7 @@ def _first_row(dataset):
 
 
 def preview_email_body(payload, config, inputs):
-    html = payload.get("html") or ""
+    html = config.get(payload["parameterName"], payload["html"])
 
     contact_names = _input_names_for_role(inputs, "contacts")
     if not contact_names:
