@@ -41,13 +41,12 @@ def preview_email_body(payload, config, inputs):
         for dataset_name in _input_names_for_role(inputs, "attachments")
     ]
 
-    attachments_templating_dict = attachments_template_dict(
-        attachment_datasets,
-        dataiku.default_project_key(),
-        (config or {}).get("apply_coloring_excel", False),
-    )
-
     try:
+        attachments_templating_dict = attachments_template_dict(
+            attachment_datasets,
+            dataiku.default_project_key(),
+            (config or {}).get("apply_coloring_excel", False),
+        )
         body_template = jinja_env.from_string(html)
         rendered_html = build_email_message_text(
             True,
