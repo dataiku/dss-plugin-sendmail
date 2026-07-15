@@ -57,7 +57,7 @@ def preview_email_body(payload, config, inputs):
             True,
         )
     except Exception as e:
-        return {"html": html, "error": str(e)}
+        return {"error": str(e)}
 
     return {"html": rendered_html}
 
