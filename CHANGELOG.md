@@ -1,6 +1,6 @@
 # Changelog
 
-## [Version 1.1.0](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.3) - Feature release - 2026-07
+## [Version 1.1.0](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.1.0) - Feature release - 2026-07
 
 - Features added
   - Use of EMAIL_TEMPLATE_TEXTAREA instead of TEXTAREA to allow preview of email body
