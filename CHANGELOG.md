@@ -1,5 +1,7 @@
 # Changelog
 
+## [Version 1.1.0](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.1.0) - Feature release - 2026-08
+- Add Cobuild support to the send mails recipe
 
 ## [Version 1.0.3](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.3) - Feature release - 2025-03
 
