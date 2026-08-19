@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 1.2.0 - Feature release - 2026-08-19
+
+- Added Cobuild support to the send mails recipe
 
 ## Version 1.1.0 - Enhancement release - 2026-07-20
 
