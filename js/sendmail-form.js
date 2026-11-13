@@ -9,13 +9,9 @@
         let channel = config.mail_channel;
         if (template.channelId != null) {
             const channelId = template.channelId.trim() ? template.channelId : '';
-            const choice = choices.find(item => channelId
-                ? item.value === channelId || item.value === channelId + SENDER_SUFFIX
-                : item.value == null || item.value === DIRECT_SMTP);
-            if (choice) {
-                channel = choice.value;
-                updates.mail_channel = channel;
-            }
+            const choice = channelId && choices.find(item => item.value === channelId || item.value === channelId + SENDER_SUFFIX);
+            channel = choice ? choice.value : null;
+            updates.mail_channel = channel;
         }
         if (template.recipient != null) {
             updates.recipient_column = template.recipient.trim() ? template.recipient : '';
@@ -72,9 +68,6 @@
                     }
                     const updates = getTemplateUpdates(template, snapshot, data && data.choices);
                     angular.extend(config, updates);
-                    if (template.channelId != null && !('mail_channel' in updates)) {
-                        $scope.emailTemplateUiState.error = 'Template applied, but channel "' + template.channelId + '" is unavailable. The current channel was kept.';
-                    }
                 });
             }).catch(function(error) {
                 if (!$scope.$$destroyed) {
