@@ -1,7 +1,7 @@
 <div ng-controller="SendmailFormController">
     <div ng-if="!viewMode" class="mbot16">
         <email-template-library-button on-open="openEmailTemplateLibrary()" disabled="emailTemplateUiState.pending"></email-template-library-button>
-        <p class="text-weak smaller-font mtop8">Prefills the body and supplied email settings. Column fields use the template values as column names.</p>
+        <p class="text-weak smaller-font mtop8">Prefills the supplied email settings and content. Column fields use the template values as column names.</p>
         <div ng-if="emailTemplateUiState.pending" role="status">Choosing or applying an email template...</div>
         <div ng-if="emailTemplateUiState.error" class="text-error" role="alert">{{emailTemplateUiState.error}}</div>
     </div>
