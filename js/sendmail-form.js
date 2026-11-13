@@ -32,7 +32,7 @@
         return updates;
     }
 
-    angular.module('dataiku.sendmail', []).controller('SendmailFormController', ['$scope', '$q', 'EnterpriseAssetLibraryModalService', 'EnterpriseAssetUsageTargetResolver', function($scope, $q, EnterpriseAssetLibraryModalService, EnterpriseAssetUsageTargetResolver) {
+    angular.module('dataiku.sendmail', []).controller('SendmailFormController', ['$scope', '$q', 'EnterpriseAssetLibraryModalService', 'EnterpriseAssetUsageTargetResolver', 'DataikuAPI', function($scope, $q, EnterpriseAssetLibraryModalService, EnterpriseAssetUsageTargetResolver, DataikuAPI) {
         $scope.emailTemplateUiState = { pending: false, error: null };
 
         $scope.openEmailTemplateLibrary = function() {
@@ -52,7 +52,11 @@
                 const snapshot = angular.copy(config);
                 const template = selection.template;
 
-                const channelChoices = template.channelId != null ? $scope.callPythonDo({ parameterName: 'mail_channel' }) : $q.when();
+                const channelChoices = template.channelId != null ? DataikuAPI.integrations.listChannelsForIntegrationType('mail').then(function(response) {
+                    const choices = response.data.map(channel => ({ value: channel.id + (channel.sender || channel.useCurrentUserAsSender ? SENDER_SUFFIX : '') }));
+                    choices.push({ value: choices.length ? DIRECT_SMTP : null });
+                    return { choices: choices };
+                }) : $q.when();
                 return channelChoices.then(function(data) {
                     if ($scope.$$destroyed || $scope.viewMode) {
                         return;
