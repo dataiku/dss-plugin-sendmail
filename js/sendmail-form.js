@@ -9,13 +9,9 @@
         let channel = config.mail_channel;
         if (template.channelId != null) {
             const channelId = template.channelId.trim() ? template.channelId : '';
-            const choice = choices.find(item => channelId
-                ? item.value === channelId || item.value === channelId + SENDER_SUFFIX
-                : item.value == null || item.value === DIRECT_SMTP);
-            if (!choice) {
-                throw new Error('The template channel is unavailable. No settings were changed.');
-            }
-            channel = choice.value;
+            const choice = (channelId && choices.find(item => item.value === channelId || item.value === channelId + SENDER_SUFFIX))
+                || choices.find(item => item.value == null || item.value === DIRECT_SMTP);
+            channel = choice ? choice.value : null;
             updates.mail_channel = channel;
         }
         if (template.recipient != null) {
