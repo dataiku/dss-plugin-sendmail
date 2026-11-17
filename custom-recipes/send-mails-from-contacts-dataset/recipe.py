@@ -5,12 +5,13 @@ from dku_email_client import SmtpConfig, SmtpEmailClient, ChannelClient
 from dss_selector_choices import SENDER_SUFFIX
 from dku_attachment_handling import build_attachment_files, attachments_template_dict
 from email_utils import build_email_subject, build_email_message_text
-from jinja2 import Environment, StrictUndefined
+from jinja2 import StrictUndefined
+from jinja2.sandbox import SandboxedEnvironment
 import json
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
-jinja_env = Environment(undefined=StrictUndefined)
+jinja_env = SandboxedEnvironment(undefined=StrictUndefined)
 
 def read_smtp_config(recipe_config):
     """ Extract SmtpConfig (named tuple) from recipe_config dict """

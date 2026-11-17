@@ -1,13 +1,14 @@
 from dss_selector_choices import DSSSelectorChoices, SENDER_SUFFIX
 from dku_support_detection import supports_messaging_channels_and_conditional_formatting
-from jinja2 import Environment, StrictUndefined
+from jinja2 import StrictUndefined
+from jinja2.sandbox import SandboxedEnvironment
 from dku_attachment_handling import attachments_template_dict
 from email_utils import build_email_message_text
 import dataiku
 
 EMAIL_TEMPLATE_PREVIEW_CALLBACK = "preview_email_body"
 
-jinja_env = Environment(undefined=StrictUndefined)
+jinja_env = SandboxedEnvironment(undefined=StrictUndefined)
 
 
 def _input_names_for_role(inputs, role):
