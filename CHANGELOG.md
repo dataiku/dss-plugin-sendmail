@@ -1,9 +1,20 @@
 # Changelog
 
-## [Version 1.1.0](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.1.0) - Feature release - 2026-07
+## Version 1.3.0 - Feature release - 2026-11
 
 - Features added
   - Use of EMAIL_TEMPLATE_TEXTAREA instead of TEXTAREA to allow preview of email body
+  - Select an email template from the library using a button at the top of the form.
+  - Apply template content and settings, including the channel, recipient, subject, and sender.
+
+## Version 1.2.0 - Feature release - 2026-08-19
+
+- Added Cobuild support to the send mails recipe
+
+## Version 1.1.0 - Enhancement release - 2026-07-20
+
+- Added supported Python versions: 3.12, 3.13, 3.14
+
 
 ## [Version 1.0.3](https://github.com/dataiku/dss-plugin-sendmail/releases/tag/v1.0.3) - Feature release - 2025-03
 
